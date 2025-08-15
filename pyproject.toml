@@ -1,0 +1,15 @@
+[project]
+name = "geomechpy"
+version = "0.0.1"
+description = ""
+authors = [
+    {name = "Florian Karpfinger"},
+    {name = "Alex Kutuev", email = "kutuev93@yandex.ru"}
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.4.1"
+
