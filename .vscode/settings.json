@@ -10,7 +10,7 @@
   },
   "black-formatter.args": [
     "--line-length",
-    "100",
+    "200",
     "--skip-string-normalization",
     "--exclude",
     "(venv|.tox|.eggs|.mypy_cache|.pytest_cache|.cache|.idea|.vscode|.git|build|dist|.gradle|__pycache__)"
@@ -19,7 +19,7 @@
     "--ignore=D203,E704,E126,W503,E203",
     "--exclude=.git,.vscode,.idea,.pids,.mypy_cache,.venv,__pycache__,docs/source/conf.py,old,build,dist,venv,pypoetry",
     "--max-complexity=12",
-    "--max-line-length=100"
+    "--max-line-length=200"
   ],
   "mypy-type-checker.args": [
     "--disallow-untyped-defs",
