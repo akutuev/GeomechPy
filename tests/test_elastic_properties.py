@@ -1,9 +1,11 @@
 import pytest
 from geomechpy.elastic_properties import ElasticProperties, ElasticPropertiesConverter
 
+CONVERTER_TOLERANCE = 1e-2
 
-def test_elastic_properties_converter_with_reference_models() -> None:
-    reference_elastic_property_model = ElasticProperties(
+
+def test_elastic_properties_converter_complex_approach() -> None:
+    reference_model = ElasticProperties(
         bulk_modulus=40.56,
         youngs_modulus=32.55,
         lames_first_parameter=32.60,
@@ -12,34 +14,50 @@ def test_elastic_properties_converter_with_reference_models() -> None:
         p_wave_modulus=56.43,
     )
 
-    calculated_elastic_property_results = [
-        ElasticPropertiesConverter.from_bulk_and_youngs_modulus(reference_elastic_property_model.bulk_modulus, reference_elastic_property_model.youngs_modulus),
-        ElasticPropertiesConverter.from_bulk_and_lames_modulus(reference_elastic_property_model.bulk_modulus, reference_elastic_property_model.lames_first_parameter),
-        ElasticPropertiesConverter.from_bulk_and_shear_modulus(reference_elastic_property_model.bulk_modulus, reference_elastic_property_model.shear_modulus),
-        ElasticPropertiesConverter.from_bulk_and_poissons_ratio_modulus(reference_elastic_property_model.bulk_modulus, reference_elastic_property_model.poissons_ratio),
-        ElasticPropertiesConverter.from_bulk_and_p_wave_modulus(reference_elastic_property_model.bulk_modulus, reference_elastic_property_model.p_wave_modulus),
-        ElasticPropertiesConverter.from_youngs_and_lames_modulus(reference_elastic_property_model.youngs_modulus, reference_elastic_property_model.lames_first_parameter),
-        ElasticPropertiesConverter.from_youngs_and_shear_modulus(reference_elastic_property_model.youngs_modulus, reference_elastic_property_model.shear_modulus),
-        ElasticPropertiesConverter.from_youngs_and_poissons_ratio_modulus(reference_elastic_property_model.youngs_modulus, reference_elastic_property_model.poissons_ratio),
-        ElasticPropertiesConverter.from_youngs_and_p_wave_modulus(reference_elastic_property_model.youngs_modulus, reference_elastic_property_model.p_wave_modulus),
-        ElasticPropertiesConverter.from_lames_and_shear_modulus(reference_elastic_property_model.lames_first_parameter, reference_elastic_property_model.shear_modulus),
-        ElasticPropertiesConverter.from_lames_and_poissons_ratio_modulus(reference_elastic_property_model.lames_first_parameter, reference_elastic_property_model.poissons_ratio),
-        ElasticPropertiesConverter.from_lames_and_p_wave_modulus(reference_elastic_property_model.lames_first_parameter, reference_elastic_property_model.p_wave_modulus),
-        ElasticPropertiesConverter.from_shear_and_poissons_ratio_modulus(reference_elastic_property_model.shear_modulus, reference_elastic_property_model.poissons_ratio),
-        ElasticPropertiesConverter.from_shear_and_p_wave_modulus(reference_elastic_property_model.shear_modulus, reference_elastic_property_model.p_wave_modulus),
-        ElasticPropertiesConverter.from_poissons_ratio_and_p_wave_modulus(reference_elastic_property_model.poissons_ratio, reference_elastic_property_model.p_wave_modulus),
+    calculated_models = [
+        ElasticPropertiesConverter.from_bulk_and_youngs_modulus(reference_model.bulk_modulus, reference_model.youngs_modulus),
+        ElasticPropertiesConverter.from_bulk_and_lames_modulus(reference_model.bulk_modulus, reference_model.lames_first_parameter),
+        ElasticPropertiesConverter.from_bulk_and_shear_modulus(reference_model.bulk_modulus, reference_model.shear_modulus),
+        ElasticPropertiesConverter.from_bulk_and_poissons_ratio_modulus(reference_model.bulk_modulus, reference_model.poissons_ratio),
+        ElasticPropertiesConverter.from_bulk_and_p_wave_modulus(reference_model.bulk_modulus, reference_model.p_wave_modulus),
+        ElasticPropertiesConverter.from_youngs_and_lames_modulus(reference_model.youngs_modulus, reference_model.lames_first_parameter),
+        ElasticPropertiesConverter.from_youngs_and_shear_modulus(reference_model.youngs_modulus, reference_model.shear_modulus),
+        ElasticPropertiesConverter.from_youngs_and_poissons_ratio_modulus(reference_model.youngs_modulus, reference_model.poissons_ratio),
+        ElasticPropertiesConverter.from_youngs_and_p_wave_modulus(reference_model.youngs_modulus, reference_model.p_wave_modulus),
+        ElasticPropertiesConverter.from_lames_and_shear_modulus(reference_model.lames_first_parameter, reference_model.shear_modulus),
+        ElasticPropertiesConverter.from_lames_and_poissons_ratio_modulus(reference_model.lames_first_parameter, reference_model.poissons_ratio),
+        ElasticPropertiesConverter.from_lames_and_p_wave_modulus(reference_model.lames_first_parameter, reference_model.p_wave_modulus),
+        ElasticPropertiesConverter.from_shear_and_poissons_ratio_modulus(reference_model.shear_modulus, reference_model.poissons_ratio),
+        ElasticPropertiesConverter.from_shear_and_p_wave_modulus(reference_model.shear_modulus, reference_model.p_wave_modulus),
+        ElasticPropertiesConverter.from_poissons_ratio_and_p_wave_modulus(reference_model.poissons_ratio, reference_model.p_wave_modulus),
     ]
 
-    elastic_properties_test = ElasticPropertiesConverter.from_velocity(3000.0, 2000.0, 2500.0)
+    for calculated_model in calculated_models:
+        assert reference_model.bulk_modulus == pytest.approx(calculated_model.bulk_modulus, rel=CONVERTER_TOLERANCE)
+        assert reference_model.youngs_modulus == pytest.approx(calculated_model.youngs_modulus, rel=CONVERTER_TOLERANCE)
+        assert reference_model.lames_first_parameter == pytest.approx(calculated_model.lames_first_parameter, rel=CONVERTER_TOLERANCE)
+        assert reference_model.shear_modulus == pytest.approx(calculated_model.shear_modulus, rel=CONVERTER_TOLERANCE)
+        assert reference_model.poissons_ratio == pytest.approx(calculated_model.poissons_ratio, rel=CONVERTER_TOLERANCE)
+        assert reference_model.p_wave_modulus == pytest.approx(calculated_model.p_wave_modulus, rel=CONVERTER_TOLERANCE)
 
-    elastic_properties_test.poissons_ratio
 
-    tolerance = 1e-2
+def test_elastic_properties_convert_from_velosity() -> None:
+    calculated_model = ElasticPropertiesConverter.from_velocity(30, 20, 2.5)
 
-    for calculated_elastic_property_result in calculated_elastic_property_results:
-        assert reference_elastic_property_model.bulk_modulus == pytest.approx(calculated_elastic_property_result.bulk_modulus, rel=tolerance)
-        assert reference_elastic_property_model.youngs_modulus == pytest.approx(calculated_elastic_property_result.youngs_modulus, rel=tolerance)
-        assert reference_elastic_property_model.lames_first_parameter == pytest.approx(calculated_elastic_property_result.lames_first_parameter, rel=tolerance)
-        assert reference_elastic_property_model.shear_modulus == pytest.approx(calculated_elastic_property_result.shear_modulus, rel=tolerance)
-        assert reference_elastic_property_model.poissons_ratio == pytest.approx(calculated_elastic_property_result.poissons_ratio, rel=tolerance)
-        assert reference_elastic_property_model.p_wave_modulus == pytest.approx(calculated_elastic_property_result.p_wave_modulus, rel=tolerance)
+    assert 916.66 == pytest.approx(calculated_model.bulk_modulus, rel=CONVERTER_TOLERANCE)
+    assert 2200.0 == pytest.approx(calculated_model.youngs_modulus, rel=CONVERTER_TOLERANCE)
+    assert 250.0 == pytest.approx(calculated_model.lames_first_parameter, rel=CONVERTER_TOLERANCE)
+    assert 1000.0 == pytest.approx(calculated_model.shear_modulus, rel=CONVERTER_TOLERANCE)
+    assert 0.1 == pytest.approx(calculated_model.poissons_ratio, rel=CONVERTER_TOLERANCE)
+    assert 2250.0 == pytest.approx(calculated_model.p_wave_modulus, rel=CONVERTER_TOLERANCE)
+
+
+def test_elastic_properties_convert_from_slowness() -> None:
+    calculated_model = ElasticPropertiesConverter.from_slowness(1000000, 2000000, 2500000)
+
+    assert 154838.40 == pytest.approx(calculated_model.bulk_modulus, rel=CONVERTER_TOLERANCE)
+    assert 154838.40 == pytest.approx(calculated_model.youngs_modulus, rel=CONVERTER_TOLERANCE)
+    assert 116128.8 == pytest.approx(calculated_model.lames_first_parameter, rel=CONVERTER_TOLERANCE)
+    assert 58064.40 == pytest.approx(calculated_model.shear_modulus, rel=CONVERTER_TOLERANCE)
+    assert 0.33 == pytest.approx(calculated_model.poissons_ratio, rel=CONVERTER_TOLERANCE)
+    assert 232257.6 == pytest.approx(calculated_model.p_wave_modulus, rel=CONVERTER_TOLERANCE)
