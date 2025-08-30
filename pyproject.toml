@@ -1,10 +1,14 @@
 [project]
 name = "geomechpy"
 version = "0.0.1"
+license = "LGPL-3.0-only"
 description = ""
 authors = [
     {name = "Florian Karpfinger"},
     {name = "Alex Kutuev", email = "kutuev93@yandex.ru"}
+]
+classifiers = [
+    "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
 ]
 readme = "README.md"
 requires-python = ">=3.10"
