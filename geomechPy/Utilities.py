@@ -49,6 +49,10 @@ class Utilities:
 
 		return P_out
 	
+
+
+
+
 	def velocity2slowness(self,vp,vs,unit_in):
 		"""
        Converts velocity to slowness 
@@ -98,7 +102,43 @@ class Utilities:
 		return vp,vs
 	
 
+	def convert_mud_weight(value, unit_in, unit_out):
+		"""
+		Convert mud weight between units:
+		- ppg: pounds per gallon
+		- sg: specific gravity
+		- kg/m3: kilograms per cubic meter
+		- psi/ft: pressure gradient in psi per foot
 
+		Parameters:
+		- value: numeric value of mud weight
+		- from_unit: source unit ('ppg', 'sg', 'kg/m3', 'psi/ft')
+		- to_unit: target unit ('ppg', 'sg', 'kg/m3', 'psi/ft')
+
+		Returns:
+		- Converted value
+		"""
+		# Conversion factors to base unit (ppg)
+		to_ppg = {
+			'ppg': 1.0,
+			'sg': 8.33,
+			'kg/m3': 8.33 / 1000 * 1000,  # 1 sg = 1000 kg/m3
+			'lb/ft3': 8.33 / 62.4,  # 1 sg = 62.4 lb/ft3
+			'psi/ft': 1 / 0.052,
+			'Pa/m': 1 / 10253.4,  # 1 ppg ≈ 10253.4 Pa/m
+			'MPa/m':  0.0976  # 1 MPa/m≈0.0976 ppg
+		}
+
+		if unit_in not in to_ppg or unit_out not in to_ppg:
+			raise ValueError("Supported units: 'ppg', 'sg', 'kg/m3', 'lb/ft3', 'psi/ft','Pa/m','MPa/m'")
+
+		# Convert to ppg
+		value_in_ppg = value * to_ppg[unit_in]
+
+		# Convert from ppg to target unit
+		converted_value = value_in_ppg / to_ppg[unit_out]
+
+		return converted_value
 
 
 
