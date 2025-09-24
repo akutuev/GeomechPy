@@ -34,5 +34,8 @@
     "--explicit-package-bases",
     "--exclude",
     "(venv|.tox|.eggs|.mypy_cache|.pytest_cache|.cache|.idea|.vscode|.git|build|dist|.gradle|__pycache__)"
-  ]
+  ],
+  "python-envs.defaultEnvManager": "ms-python.python:venv",
+  "python-envs.defaultPackageManager": "ms-python.python:pip",
+  "python-envs.pythonProjects": []
 }
