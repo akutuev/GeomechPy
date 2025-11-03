@@ -1,14 +1,10 @@
+[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
+
 # GeomechPy
 
 The geomechpy Python library aims to provide a comprehensive set of functions to build a Geomechanics workflow.
 This version covers velocity/slowness to dynamic property conversion and conversion of elastic properties into different notations.
 In future releases functionalities for: pore pressure, overburden stress, horizontal stress, static elastic properties, rock strength properties and wellbore stability will be included.
-[![License: LGPL v3](https://img.shields.io/badge/License-LGPL%20v3-blue.svg)](https://www.gnu.org/licenses/lgpl-3.0)
-
-# GeomechPy
-
-To be added here
-
 
 ## Installation
 To be added here
