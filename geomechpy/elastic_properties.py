@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class ElasticProperties:
-    """Elastic properties model per depth. Can be populated manually or via converter
+    """Elastic properties model per depth. Can be populated manually or via converter.
 
     Attributes:
         Bulk_modulus (float): The bulk modulus (K or B or k) of a substance is a measure of the resistance of a substance to bulk compression. Unit: Pressure
@@ -34,6 +34,7 @@ class ElasticPropertiesConverter:
     @staticmethod
     def from_bulk_and_youngs(bulk_modulus: float, youngs_modulus: float) -> ElasticProperties:
         """Convert Bulk and Youngs modulus to  other elastic property types.
+
         Input Unit: Pressure Unit of any type (GPa, psi, Mpsi etc). Pressure unit of both inputs needs to be consistent.
 
         Args:
@@ -48,7 +49,6 @@ class ElasticPropertiesConverter:
             >>> ElasticPropertiesConverter.from_bulk_and_youngs(19.7184,33.2748)
             ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
-
         lame_parameter = 3 * bulk_modulus * (3 * bulk_modulus - youngs_modulus) / (9 * bulk_modulus - youngs_modulus)
         shear_modulus = 3 * bulk_modulus * youngs_modulus / (9 * bulk_modulus - youngs_modulus)
         poissons_ratio = (3 * bulk_modulus - youngs_modulus) / (6 * bulk_modulus)
@@ -59,6 +59,7 @@ class ElasticPropertiesConverter:
     @staticmethod
     def from_bulk_and_lame(bulk_modulus: float, lame_parameter: float) -> ElasticProperties:
         """Convert Bulk modulus and Lame parameter to  other elastic property types.
+
         Input Unit: Pressure Unit of any type (GPa, psi, Mpsi etc). Pressure unit of both inputs needs to be consistent.
 
         Args:
@@ -73,7 +74,6 @@ class ElasticPropertiesConverter:
             >>> ElasticPropertiesConverter.from_bulk_and_lame(19.7184, 10.61851)
             ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
-
         youngs_modulus = 9 * bulk_modulus * (bulk_modulus - lame_parameter) / (3 * bulk_modulus - lame_parameter)
         shear_modulus = 3 * (bulk_modulus - lame_parameter) / 2
         poissons_ratio = lame_parameter / (3 * bulk_modulus - lame_parameter)
@@ -84,6 +84,7 @@ class ElasticPropertiesConverter:
     @staticmethod
     def from_bulk_and_shear(bulk_modulus: float, shear_modulus: float) -> ElasticProperties:
         """Convert Bulk modulus and Shear modulus to  other elastic property types.
+
         Input Unit: Pressure Unit of any type (GPa, psi, Mpsi etc). Pressure unit of both inputs needs to be consistent.
 
         Args:
@@ -108,6 +109,7 @@ class ElasticPropertiesConverter:
     @staticmethod
     def from_bulk_and_poissons(bulk_modulus: float, poissons_ratio: float) -> ElasticProperties:
         """Convert Bulk modulus and Poisson's ratio to  other elastic property types.
+
         Input Unit: Bulk modulus - pressure unit, Poisson's ratio - unitless.
 
         Args:
@@ -132,6 +134,7 @@ class ElasticPropertiesConverter:
     @staticmethod
     def from_bulk_and_p_wave(bulk_modulus: float, p_wave_modulus: float) -> ElasticProperties:
         """Convert Bulk and P-wave modulus to  other elastic property types.
+
         Input Unit: Pressure Unit of any type (GPa, psi, Mpsi etc). Pressure unit of both inputs needs to be consistent.
 
         Args:
@@ -156,6 +159,7 @@ class ElasticPropertiesConverter:
     @staticmethod
     def from_youngs_and_lame(youngs_modulus: float, lame_parameter: float) -> ElasticProperties:
         """Convert Young's modulus and Lame parameter to  other elastic property types.
+
         Input Unit: Pressure Unit of any type (GPa, psi, Mpsi etc). Pressure unit of both inputs needs to be consistent.
 
         Args:
@@ -182,6 +186,7 @@ class ElasticPropertiesConverter:
     @staticmethod
     def from_youngs_and_shear(youngs_modulus: float, shear_modulus: float) -> ElasticProperties:
         """Convert Young's and Shear modulus to  other elastic property types.
+
         Input Unit: Pressure Unit of any type (GPa, psi, Mpsi etc). Pressure unit of both inputs needs to be consistent.
 
         Args:
@@ -206,6 +211,7 @@ class ElasticPropertiesConverter:
     @staticmethod
     def from_youngs_and_poissons(youngs_modulus: float, poissons_ratio: float) -> ElasticProperties:
         """Convert Young's modulus and Poisson's ratio to  other elastic property types.
+
         Input Unit: Young's modulus - pressure unit, Poisson's ratio - unitless.
 
         Args:
@@ -230,6 +236,7 @@ class ElasticPropertiesConverter:
     @staticmethod
     def from_youngs_and_p_wave(youngs_modulus: float, p_wave_modulus: float) -> ElasticProperties:
         """Convert Young's modulus and P-wave modulus to  other elastic property types.
+
         Input Unit: Pressure Unit of any type (GPa, psi, Mpsi etc). Pressure unit of both inputs needs to be consistent.
 
         Args:
@@ -256,6 +263,7 @@ class ElasticPropertiesConverter:
     @staticmethod
     def from_lame_and_shear(lame_parameter: float, shear_modulus: float) -> ElasticProperties:
         """Convert Lame parameter and Shear modulus to  other elastic property types.
+
         Input Unit: Pressure Unit of any type (GPa, psi, Mpsi etc). Pressure unit of both inputs needs to be consistent.
 
         Args:
@@ -280,6 +288,7 @@ class ElasticPropertiesConverter:
     @staticmethod
     def from_lame_and_poissons(lame_parameter: float, poissons_ratio: float) -> ElasticProperties:
         """Convert Lame parameter and Poisson's ratio to  other elastic property types.
+
         Input Unit: Lame parameter - pressure unit, Poisson's ratio - unitless.
 
         Args:
@@ -304,6 +313,7 @@ class ElasticPropertiesConverter:
     @staticmethod
     def from_lame_and_p_wave(lame_parameter: float, p_wave_modulus: float) -> ElasticProperties:
         """Convert Lame parameter and P-wave modulus to  other elastic property types.
+
         Input Unit: Pressure Unit of any type (GPa, psi, Mpsi etc). Pressure unit of both inputs needs to be consistent.
 
         Args:
@@ -328,6 +338,7 @@ class ElasticPropertiesConverter:
     @staticmethod
     def from_shear_and_poissons(shear_modulus: float, poissons_ratio: float) -> ElasticProperties:
         """Convert Shear modulus and Poisson's ratio to  other elastic property types.
+
         Input Unit: Young's modulus - pressure unit, Poisson's ratio - unitless.
 
         Args:
@@ -352,15 +363,16 @@ class ElasticPropertiesConverter:
     @staticmethod
     def from_shear_and_p_wave(shear_modulus: float, p_wave_modulus: float) -> ElasticProperties:
         """Convert Shear modulus and P-wave modulus to  other elastic property types.
+
         Input Unit: Pressure Unit of any type (GPa, psi, Mpsi etc). Pressure unit of both inputs needs to be consistent.
 
         Args:
             shear_modulus (float): Shear modulus magnitude Unit: Pressure Unit
             p_wave_modulus (float): P-wave modulus magnitude Unit: Pressure Unit
-            Output unit: consistent with input unit
 
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
+            Output unit: consistent with input unit
 
         Example:
             >>> ElasticPropertiesConverter.from_shear_and_p_wave(13.6512, 37.92)
@@ -376,6 +388,7 @@ class ElasticPropertiesConverter:
     @staticmethod
     def from_poissons_and_p_wave(poissons_ratio: float, p_wave_modulus: float) -> ElasticProperties:
         """Convert Poisson's ratio and P-wave modulus to  other elastic property types.
+
         Input Unit: Poisson's ratio - unitless, P-wave modulus - pressure unit.
 
         Args:
