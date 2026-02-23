@@ -10,8 +10,7 @@ class OverburdenStressCalculation:
 
     @staticmethod
     def calculate_overburden_stress_onshore(tvd: float, lithostatic_gradient: float = 1.05, air_gap: float = 0.0) -> float:
-        """
-        Calculates overburden stress (vertical stress) from tvd and lithogradient.
+        """Calculates overburden stress (vertical stress) from tvd and lithogradient.
 
         Args:
             tvd (float): TODO Depth value. Unit: Depth Unit [ft]
@@ -34,8 +33,7 @@ class OverburdenStressCalculation:
 
     @staticmethod
     def calculate_overburden_stress_offshore(tvd: float, lithostatic_gradient: float = 1.05, air_gap: float = 0.0, water_depth: float = 0.0, sea_water_pressure_gradient: float = 0.47) -> float:
-        """
-        Calculates overburden stress (vertical stress) from tvd and lithogradient. {TODO: Difference in description from previous?}
+        """Calculates overburden stress (vertical stress) from tvd and lithogradient. {TODO: Difference in description from previous?}
 
         Args:
             tvd (float): TODO Depth value. Unit: Depth Unit [ft]

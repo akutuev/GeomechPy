@@ -12,8 +12,10 @@ class HorizontalStresses:
 
     """
 
-    Shmin: float
-    SHmax: float
+    shmin: float
+    shmax: float
+    q_factor: float
+    shmax_shmin_ratio: float
 
 
 class HorizontalStressesCalculation:
@@ -24,35 +26,39 @@ class HorizontalStressesCalculation:
     """
 
     @staticmethod
-    def calculate_poroelastic_horizontal_stresses(overburden_stress: float, pore_pressure: float, poisson_ratio: float, youngs_modulus: float, biot_coefficient: float = 1, EX: float = 0.0001, EY: float = 0.009):
-        """
-        Calculates horizontal stress using Poroelastic horizontal stress equation
+    def calculate_poroelastic_horizontal_stresses(overburden_stress: float, pore_pressure: float, poisson_ratio: float, youngs_modulus: float, biot_coefficient: float = 1.0, EX: float = 0.0001, EY: float = 0.009) -> HorizontalStresses:
+        """Calculates horizontal stress using Poroelastic horizontal stress equation.
 
         Args:
-            overburden_stress (array-like): Array of overburden stress values.
-            pore_pressure (array-like): Array of pore pressure values.
-            biot_coefficient (float): Biot's coefficient.
+            overburden_stress (float): Array of overburden stress values.
+            pore_pressure (float): Array of pore pressure values.
             poisson_ratio (float): Poisson's ratio.
+            youngs_modulus (float): TODO
+            biot_coefficient (float): Biot's coefficient. Defaults to 1.0
+            EX (float): Defaults to 0.0001
+            EY (float): Defaults to 0.009
 
         Returns:
-            array-like: Array of horizontal stress values.
+            HorizontalStresses: Dataclass containing computed horizontal stresses properties. See `HorizontalStresses` for details
+            Output unit: consistent with input unit
         """
-        biot_coefficient = int(biot_coefficient)
         EX = float(EX) / 1e-3
         EY = float(EY) / 1e-3
         A = poisson_ratio / (1 - poisson_ratio)
         B = youngs_modulus / (1 - poisson_ratio * poisson_ratio)
         C = (poisson_ratio * youngs_modulus) / (1 - poisson_ratio * poisson_ratio)
 
-        shmin_phs = A * overburden_stress + (1 - A) * biot_coefficient * pore_pressure + B * EX + C * EY
-        shmax_phs = A * overburden_stress + (1 - A) * biot_coefficient * pore_pressure + B * EY + C * EX
+        shmin = A * overburden_stress + (1 - A) * biot_coefficient * pore_pressure + B * EX + C * EY
+        shmax = A * overburden_stress + (1 - A) * biot_coefficient * pore_pressure + B * EY + C * EX
 
-        return shmin_phs, shmax_phs
+        q_factor = HorizontalStressesCalculation.calculate_stress_regime_q_factor(0.0, shmax, shmin)
+        shmax_shmin_ratio = HorizontalStressesCalculation.calculate_horizontal_stress_ratio(shmax, shmin)
+
+        return HorizontalStresses(shmin, shmax, q_factor, shmax_shmin_ratio)
 
     @staticmethod
     def calculate_shmax_multiplier(shmin: float, shmax_multiplier: float = 1.1) -> float:
-        """
-        Calculates maximum horizontal stress from minimum horizontal strss using multiploer
+        """Calculates maximum horizontal stress from minimum horizontal strss using multiplier.
 
         Args:
             shmin (float): TODO
@@ -61,15 +67,13 @@ class HorizontalStressesCalculation:
         Returns:
             shmax (float): TODO
         """
-        shmax_multiplier = float(shmax_multiplier)
         shmax = shmin * shmax_multiplier
 
         return shmax
 
     @staticmethod
-    def calculate_stress_regime_q_factor(sigv: float, shmin: float, shmax: float) -> float:
-        """
-        Calculates maximum horizontal stress from minimum horizontal strss using multiploer
+    def calculate_stress_regime_q_factor(sigv: float, shmax: float, shmin: float) -> float:
+        """Calculates maximum horizontal stress from minimum horizontal strss using multiplier.
 
         Args:
             sigv (float): TODO
@@ -92,8 +96,7 @@ class HorizontalStressesCalculation:
 
     @staticmethod
     def calculate_horizontal_stress_ratio(shmax: float, shmin: float) -> float:
-        """
-        Calculates maximum horizontal stress from minimum horizontal strss using multiploer
+        """Calculates maximum horizontal stress from minimum horizontal strss using multiplier.
 
         Args:
             shmax (float): TODO

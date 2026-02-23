@@ -10,8 +10,7 @@ class PorePressureCalculation:
 
     @staticmethod
     def calculate_pore_pressure_onshore(tvd: float, formation_pore_pressure_gradient: float = 0.47, air_gap: float = 0.0) -> float:
-        """
-        Calculates pore pressure from tvd and pore pressure gradient.
+        """Calculates pore pressure from tvd and pore pressure gradient.
 
         Args:
             tvd (float): TODO
@@ -33,8 +32,7 @@ class PorePressureCalculation:
 
     @staticmethod
     def calculate_pore_pressure_offshore(tvd: float, formation_pore_pressure_gradient: float = 0.47, air_gap: float = 0.0, water_depth: float = 0.0, sea_water_pressure_gradient: float = 0.47) -> float:
-        """
-        Calculates overburden stress (vertical stress) from tvd and lithogradient.
+        """Calculates overburden stress (vertical stress) from tvd and lithogradient.
 
         Args:
             tvd (float): TODO

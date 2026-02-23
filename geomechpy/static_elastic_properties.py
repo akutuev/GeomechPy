@@ -2,20 +2,6 @@ import math
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
-class StaticElasticProperties:
-    """Static elastic properties per depth. Can be populated manually or via converter
-
-    Attributes:
-       Bulk_modulus (float): The bulk modulus (K or B or k) of a substance is a measure of the resistance of a substance to bulk compression. Unit: Pressure
-    """
-
-    youngs_modulus_static: float
-    poissons_ratio_static: float
-    bulk_modulus_static: float
-    biot_coefficient: float
-
-
 class StaticElasticPropertiesConverter:
     """Convert dynamic elastic properties to static elastic properties
 
@@ -25,7 +11,7 @@ class StaticElasticPropertiesConverter:
     """
 
     @staticmethod
-    def convert_dyn2sta_yme_custom_power_law(measurement: float, multiplier: float, exponent: float) -> StaticElasticProperties:
+    def convert_dyn2sta_yme_custom_power_law(measurement: float, multiplier: float, exponent: float) -> float:
         """
         Convert dynamic to static Youngs modulus using Fuller correlation.
 
@@ -54,10 +40,10 @@ class StaticElasticPropertiesConverter:
 
         yme_sta_power_law = multiplier * measurement**exponent
 
-        return StaticElasticProperties(yme_sta_power_law)
+        return float(yme_sta_power_law)
 
     @staticmethod
-    def dyn2sta_yme_bradord(yme_dyn: float) -> StaticElasticProperties:
+    def dyn2sta_yme_bradord(yme_dyn: float) -> float:
         """
         Convert dynamic to static Youngs modulus using Bradord correlation
 
@@ -84,11 +70,10 @@ class StaticElasticPropertiesConverter:
         exponent = 2.7
         yme_sta_bradford = multiplier * yme_dyn**exponent
 
-        return None
-        #   return StaticElasticProperties.
+        return float(yme_sta_bradford)
 
     @staticmethod
-    def dyn2sta_yme_najib(yme_dyn: float) -> StaticElasticProperties:
+    def dyn2sta_yme_najib(yme_dyn: float) -> float:
         """
         Convert dynamic to static Youngs modulus using Najib correlation.
 
@@ -115,10 +100,10 @@ class StaticElasticPropertiesConverter:
         exponent = 1.96
         yme_sta_najib = multiplier * yme_dyn**exponent
 
-        return StaticElasticProperties(yme_sta_najib)
+        return float(yme_sta_najib)
 
     @staticmethod
-    def dyn2sta_yme_fuller(yme_dyn: float) -> StaticElasticProperties:
+    def dyn2sta_yme_fuller(yme_dyn: float) -> float:
         """
         Convert dynamic to static Youngs modulus using Fuller correlation.
 
@@ -145,10 +130,10 @@ class StaticElasticPropertiesConverter:
         exponent = 1.632
         yme_sta_fuller = multiplier * yme_dyn**exponent
 
-        return StaticElasticProperties(yme_sta_fuller)
+        return float(yme_sta_fuller)
 
     @staticmethod
-    def dyn2sta_yme_morales(yme_dyn: float, porosity: float, exclude_low_por: bool = True) -> StaticElasticProperties:
+    def dyn2sta_yme_morales(yme_dyn: float, porosity: float, exclude_low_por: bool = True) -> float:
         """
         Convert dynamic to static Youngs modulus using Fuller correlation.
 
@@ -190,10 +175,10 @@ class StaticElasticPropertiesConverter:
         else:
             yme_sta_morales = multiplier * yme_dyn**exponent
 
-        return StaticElasticProperties(yme_sta_morales)
+        return yme_sta_morales
 
     @staticmethod
-    def dyn2sta_yme_modified_morales(yme_dyn: float, porosity: float, exclude_low_por: bool = True) -> StaticElasticProperties:
+    def dyn2sta_yme_modified_morales(yme_dyn: float, porosity: float, exclude_low_por: bool = True) -> float:
         """
         Convert dynamic to static Youngs modulus using Fuller correlation.
 
@@ -225,10 +210,10 @@ class StaticElasticPropertiesConverter:
 
         yme_sta_morales = multiplier * yme_dyn**exponent
 
-        return StaticElasticProperties(yme_sta_morales)
+        return float(yme_sta_morales)
 
     @staticmethod
-    def dyn2sta_yme_lacy(yme_dyn: float, porosity: float, exclude_low_por: bool = True) -> StaticElasticProperties:
+    def dyn2sta_yme_lacy(yme_dyn: float, porosity: float, exclude_low_por: bool = True) -> float:
         """
         Convert dynamic to static Youngs modulus using Fuller correlation.
 
@@ -260,10 +245,10 @@ class StaticElasticPropertiesConverter:
 
         yme_sta_morales = multiplier * yme_dyn**exponent
 
-        return StaticElasticProperties(yme_sta_morales)
+        return float(yme_sta_morales)
 
     @staticmethod
-    def dyn2sta_yme_custom_linear_law(measurement: float, slope: float, intercept: float) -> StaticElasticProperties:
+    def dyn2sta_yme_custom_linear_law(measurement: float, slope: float, intercept: float) -> float:
         """
         Convert dynamic to static Youngs modulus using Fuller correlation.
 
@@ -291,10 +276,10 @@ class StaticElasticPropertiesConverter:
         """
         yme_sta_linear_law = slope * measurement + intercept
 
-        return StaticElasticProperties(yme_sta_linear_law)
+        return yme_sta_linear_law
 
     @staticmethod
-    def dyn2sta_yme_custom_exponential_law(measurement: float, multiplier: float, exponent: float) -> StaticElasticProperties:
+    def dyn2sta_yme_custom_exponential_law(measurement: float, multiplier: float, exponent: float) -> float:
         """
         Convert dynamic to static Youngs modulus using Fuller correlation.
 
@@ -323,10 +308,10 @@ class StaticElasticPropertiesConverter:
 
         yme_sta_morales = multiplier * yme_dyn**exponent
 
-        return StaticElasticProperties(yme_sta_morales)
+        return float(yme_sta_morales)
 
     @staticmethod
-    def dyn2sta_yme_custom_constant_law(constant: float) -> StaticElasticProperties:
+    def dyn2sta_yme_custom_constant_law(constant: float) -> float:
         """
         Custom constant law to assign a constant value for static Young's modulus
 
@@ -352,4 +337,4 @@ class StaticElasticPropertiesConverter:
 
         yme_sta_constant = constant
 
-        return StaticElasticProperties(yme_sta_constant)
+        return yme_sta_constant
