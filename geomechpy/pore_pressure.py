@@ -10,16 +10,15 @@ class PorePressureCalculation:
 
     @staticmethod
     def calculate_pore_pressure_onshore(tvd: float, formation_pore_pressure_gradient: float = 0.47, air_gap: float = 0.0) -> float:
-        """Calculates pore pressure from tvd and pore pressure gradient.
+        """Calculates pore pressure from tvd and pore pressure gradient in onshore setting.
 
         Args:
-            tvd (float): TODO
-            formation_pore_pressure_gradient (float): TODO. Defaults to 0.47
-            air_gap: TODO Defaults to 0.0
+            tvd (float): True Vertical Depth. Unit: Depth Unit [ft]
+            formation_pore_pressure_gradient (float): Pore pressure depth gradient. Unit: Depth Gradient Unit [psi/ft]. Defaults to 0.47
+            air_gap (float): Distance from Drill Floor to Ground Level. Usually reported as Kelly bushing (KB) or Elevation Ground Level. Unit: Depth Unit [ft]. Defaults to 0.0 
 
         Returns:
-            Overburden stress onshore value.
-            Unit: Depth Unit [psi]
+            pore_pressure: value of pressure calculated for onshore in pressure unit  Unit: Pressure Unit [psi]
         """
         air_gradient = 0.0004
         air_pressure = air_gradient * air_gap
@@ -32,18 +31,17 @@ class PorePressureCalculation:
 
     @staticmethod
     def calculate_pore_pressure_offshore(tvd: float, formation_pore_pressure_gradient: float = 0.47, air_gap: float = 0.0, water_depth: float = 0.0, sea_water_pressure_gradient: float = 0.47) -> float:
-        """Calculates overburden stress (vertical stress) from tvd and lithogradient.
+        """Calculates pore pressure from tvd and pore pressure gradient in offshore setting.
 
         Args:
-            tvd (float): TODO
-            formation_pore_pressure_gradient (float): TODO. Defaults to 0.47
-            air_gap: TODO. Defaults to 0.0
-            water_depth: TODO Defaults to 0.0
-            sea_water_pressure_gradient: TODO Defaults to 0.47
+            tvd (float): True Vertical Depth. Unit: Depth Unit [ft]
+            formation_pore_pressure_gradient (float): Pore pressure depth gradient. Unit: Depth Gradient Unit [psi/ft]. Defaults to 0.47
+            air_gap (float): Distance from Drill Floor to mean sea level. Usually reported as Kelly bushing (KB). Unit: Depth Unit [ft]. Defaults to 0.0 ft
+            water_depth (float):  Water Depth measured from the mean sea level to sea bottom at well location.Unit: Depth Unit [ft]. Defaults to 0.0 ft
+            sea_water_pressure_gradient (float): Water gradient of the sea water. Unit: Depth Gradient Unit [psi/ft]. Defaults to 0.47 psi/ft
 
         Returns:
-            Overburden stress offshore value.
-            Unit: Depth Unit [psi]
+            pore_pressure: value of pressure calculated for onshore in pressure unit  Unit: Pressure Unit [psi]
         """
         air_gradient = 0.0004
         air_pressure = air_gradient * air_gap
