@@ -1,18 +1,5 @@
 import math
 from dataclasses import dataclass
-
-@dataclass(frozen=True)
-class StaticElasticProperties:
-    """Elastic properties model per depth. Can be populated manually or via converter.
-
-    Attributes:
-       Static Young's modulus (float): Calculated from various literature and generic correlation Unit: Elastic Modulus 
-       Static Poisson's ratio (float): Calculated using a constant multiplier Unit: unitless
-       Biot coefficient (float): Dedined using a constant value Unit: unitless
-   """
-      yme_sta_suffix: float <-- not sure how this can be done more generic
-      pr_sta: float
-      alpha: float
     
 
 class StaticElasticPropertiesConverter:
