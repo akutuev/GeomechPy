@@ -15,7 +15,7 @@ class OverburdenStressCalculation:
         Args:
             tvd (float): True Vertical Depth. Unit: Depth Unit [ft]
             lithostatic_gradient (float): Overburden stress depth gradient. Unit: Depth Gradient Unit [psi/ft]. Defaults to 1.05
-            air_gap (float): Distance from Drill Floor to Ground LEvel. Usually reported as Kelly bushing (KB) or Elevation Ground Level. Unit: Depth Unit [ft]. Defaults to 0.0 
+            air_gap (float): Distance from Drill Floor to Ground LEvel. Usually reported as Kelly bushing (KB) or Elevation Ground Level. Unit: Depth Unit [ft]. Defaults to 0.0
 
         Returns:
             overburden_stress: value of overburden stress calculated for onshore in pressure unit  Unit: Pressure Unit [psi]
@@ -42,7 +42,7 @@ class OverburdenStressCalculation:
             sea_water_pressure_gradient (float): Water gradient of the sea water. Unit: Depth Gradient Unit [psi/ft]. Defaults to 0.47 psi/ft
 
         Returns:
-            overburden_stress: value of overburden stress calculated for offshore in pressure unit  Unit: Pressure Unit [psi]    
+            overburden_stress: value of overburden stress calculated for offshore in pressure unit  Unit: Pressure Unit [psi]
         """
         air_gradient = 0.0004
         air_pressure = air_gradient * air_gap

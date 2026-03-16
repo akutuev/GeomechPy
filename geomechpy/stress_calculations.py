@@ -92,16 +92,12 @@ class HorizontalStressesCalculation:
         """
         if sigv > shmax and shmax >= shmin:
             q_factor = (shmax - shmin) / (sigv - shmin)
-            q_flag = 1
         elif shmin < sigv and sigv <= shmax:
             q_factor = 2 - (sigv - shmin) / (shmax - shmin)
-            q_flag = 2
         elif sigv <= shmin and shmin < shmax:
             q_factor = 2 + (shmin - sigv) / (shmax - sigv)
-            q_flag = 3
         else:
             q_factor = 4
-            q_flag = 4
 
         return q_factor
 

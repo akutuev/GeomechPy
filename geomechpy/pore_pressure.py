@@ -15,7 +15,7 @@ class PorePressureCalculation:
         Args:
             tvd (float): True Vertical Depth. Unit: Depth Unit [ft]
             formation_pore_pressure_gradient (float): Pore pressure depth gradient. Unit: Depth Gradient Unit [psi/ft]. Defaults to 0.47
-            air_gap (float): Distance from Drill Floor to Ground Level. Usually reported as Kelly bushing (KB) or Elevation Ground Level. Unit: Depth Unit [ft]. Defaults to 0.0 
+            air_gap (float): Distance from Drill Floor to Ground Level. Usually reported as Kelly bushing (KB) or Elevation Ground Level. Unit: Depth Unit [ft]. Defaults to 0.0
 
         Returns:
             pore_pressure: value of pressure calculated for onshore in pressure unit  Unit: Pressure Unit [psi]
