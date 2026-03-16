@@ -5,8 +5,7 @@ class OverburdenStressCalculation:
     """Computation of the Overburden Stress using various methods based on gradient, density.
 
     Reference:
-       Zhang, Jon Jincai. Applied petroleum geomechanics. Vol. 1. Cambridge: Gulf Professional Publishing, 2019. Chapter 6.1
-    """
+       Zhang, Jon Jincai. Applied petroleum geomechanics. Vol. 1. Cambridge: Gulf Professional Publishing, 2019. Chapter 6.1"""
 
     @staticmethod
     def calculate_overburden_stress_onshore(tvd: float, lithostatic_gradient: float = 1.05, air_gap: float = 0.0) -> float:
@@ -18,8 +17,7 @@ class OverburdenStressCalculation:
             air_gap (float): Distance from Drill Floor to Ground LEvel. Usually reported as Kelly bushing (KB) or Elevation Ground Level. Unit: Depth Unit [ft]. Defaults to 0.0
 
         Returns:
-            overburden_stress: value of overburden stress calculated for onshore in pressure unit  Unit: Pressure Unit [psi]
-        """
+            overburden_stress (float): Overburden stress for onshore setting. Unit: Pressure Unit [psi]"""
         air_gradient = 0.0004
         air_pressure = air_gradient * air_gap
 
@@ -38,12 +36,11 @@ class OverburdenStressCalculation:
             tvd (float): True Vertical Depth. Unit: Depth Unit [ft]
             lithostatic_gradient (float): Overburden stress depth gradient. Unit: Depth Gradient Unit [psi/ft]. Defaults to 1.05 psi/ft
             air_gap (float): Distance from Drill Floor to mean sea level. Usually reported as Kelly bushing (KB). Unit: Depth Unit [ft]. Defaults to 0.0 ft
-            water_depth (float):  Water Depth measured from the mean sea level to sea bottom at well location.Unit: Depth Unit [ft]. Defaults to 0.0 ft
+            water_depth (float): Water Depth measured from the mean sea level to sea bottom at well location. Unit: Depth Unit [ft]. Defaults to 0.0 ft
             sea_water_pressure_gradient (float): Water gradient of the sea water. Unit: Depth Gradient Unit [psi/ft]. Defaults to 0.47 psi/ft
 
         Returns:
-            overburden_stress: value of overburden stress calculated for offshore in pressure unit  Unit: Pressure Unit [psi]
-        """
+            overburden_stress (float): Overburden stress for offshore setting. Unit: Pressure Unit [psi]"""
         air_gradient = 0.0004
         air_pressure = air_gradient * air_gap
 

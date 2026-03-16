@@ -7,13 +7,12 @@ class ElasticProperties:
     """Elastic properties model per depth. Can be populated manually or via converter.
 
     Attributes:
-        Bulk_modulus (float): The bulk modulus (K or B or k) of a substance is a measure of the resistance of a substance to bulk compression. Unit: Pressure
-        Youngs_modulus (float): Young modulus is a mechanical property of solid materials that measures the tensile or compressive stiffness when the force is applied lengthwise. Unit: Pressure
-        Lame_parameter (float): Lame parameters is a material-dependent quantity denoted by λ which arises in strain-stress relationships. Unit: Pressure
-        Shear_modulus (float): Shear modulus is a measure of the elastic shear stiffness of a material and is defined as the ratio of shear stress to the shear strain. Unit: Pressure
-        Poissons_ratio (float): Poisson's ratio is a measure of the Poisson effect, the deformation of a material in directions perpendicular to the specific direction of loading. Unit: unitless
-        P_wave_modulus (float): P-wave modulus is one of the elastic moduli available to describe isotropic homogeneous materials. Unit: Pressure
-    """
+        bulk_modulus (float): The bulk modulus (K or B or k) of a substance is a measure of the resistance of a substance to bulk compression. Unit: Pressure
+        youngs_modulus (float): Young modulus is a mechanical property of solid materials that measures the tensile or compressive stiffness when the force is applied lengthwise. Unit: Pressure
+        lame_parameter (float): Lame parameters is a material-dependent quantity denoted by λ which arises in strain-stress relationships. Unit: Pressure
+        shear_modulus (float): Shear modulus is a measure of the elastic shear stiffness of a material and is defined as the ratio of shear stress to the shear strain. Unit: Pressure
+        poissons_ratio (float): Poisson's ratio is a measure of the Poisson effect, the deformation of a material in directions perpendicular to the specific direction of loading. Unit: unitless
+        p_wave_modulus (float): P-wave modulus is one of the elastic moduli available to describe isotropic homogeneous materials. Unit: Pressure"""
 
     bulk_modulus: float
     youngs_modulus: float
@@ -27,9 +26,7 @@ class ElasticPropertiesConverter:
     """Convert any pair of two elastic properties into all other types of elastic property notations.
 
     Reference:
-        https://en.wikipedia.org/wiki/Elastic_modulus
-
-    """
+        https://en.wikipedia.org/wiki/Elastic_modulus"""
 
     @staticmethod
     def convert_from_bulk_and_youngs(bulk_modulus: float, youngs_modulus: float) -> ElasticProperties:
@@ -42,9 +39,7 @@ class ElasticPropertiesConverter:
             youngs_modulus (float): Young modulus magnitude Unit: Pressure Unit
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
-            Output unit: consistent with input unit
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: consistent with input unit"""
         lame_parameter = 3 * bulk_modulus * (3 * bulk_modulus - youngs_modulus) / (9 * bulk_modulus - youngs_modulus)
         shear_modulus = 3 * bulk_modulus * youngs_modulus / (9 * bulk_modulus - youngs_modulus)
         poissons_ratio = (3 * bulk_modulus - youngs_modulus) / (6 * bulk_modulus)
@@ -63,9 +58,7 @@ class ElasticPropertiesConverter:
             lame_parameter (float): Lame parameter magnitude Unit: Pressure Unit
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
-            Output unit: consistent with input unit
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: consistent with input unit"""
         youngs_modulus = 9 * bulk_modulus * (bulk_modulus - lame_parameter) / (3 * bulk_modulus - lame_parameter)
         shear_modulus = 3 * (bulk_modulus - lame_parameter) / 2
         poissons_ratio = lame_parameter / (3 * bulk_modulus - lame_parameter)
@@ -84,9 +77,7 @@ class ElasticPropertiesConverter:
             shear_modulus (float): Shear modulus magnitude Unit: Pressure Unit
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
-            Output unit: consistent with input unit
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: consistent with input unit"""
         youngs_modulus = 9 * bulk_modulus * shear_modulus / (3 * bulk_modulus + shear_modulus)
         lame_parameter = bulk_modulus - 2 * shear_modulus / 3
         poissons_ratio = (3 * bulk_modulus - 2 * shear_modulus) / (2 * (3 * bulk_modulus + shear_modulus))
@@ -105,9 +96,7 @@ class ElasticPropertiesConverter:
             poissons_ratio (float): Young modulus magnitude Unit: Unitless
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties  See `ElasticProperties` for details
-            Output unit: consistent with input unit
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: consistent with input unit"""
         youngs_modulus = 3 * bulk_modulus * (1 - 2 * poissons_ratio)
         lame_parameter = 3 * bulk_modulus * poissons_ratio / (1 + poissons_ratio)
         shear_modulus = 3 * bulk_modulus * (1 - 2 * poissons_ratio) / (2 * (1 + poissons_ratio))
@@ -126,9 +115,7 @@ class ElasticPropertiesConverter:
             p_wave_modulus (float): P-wave modulus magnitude Unit: Pressure Unit
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
-            Output unit: consistent with input unit
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: consistent with input unit"""
         youngs_modulus = 9 * bulk_modulus * (p_wave_modulus - bulk_modulus) / (3 * bulk_modulus + p_wave_modulus)
         lame_parameter = (3 * bulk_modulus - p_wave_modulus) / 2
         shear_modulus = (3 * (p_wave_modulus - bulk_modulus)) / 4
@@ -147,9 +134,7 @@ class ElasticPropertiesConverter:
             lame_parameter (float): Lame parameter magnitude Unit: Pressure Unit
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
-            Output unit: consistent with input unit
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: consistent with input unit"""
         R = math.sqrt(youngs_modulus**2 + 9 * lame_parameter**2 + 2 * youngs_modulus * lame_parameter)
 
         bulk_modulus = (youngs_modulus + 3 * lame_parameter + R) / 6
@@ -167,12 +152,10 @@ class ElasticPropertiesConverter:
 
         Args:
             youngs_modulus (float): Young's modulus magnitude Unit: Pressure Unit
-            shear_modulus (float):  Shear modulus magnitude Unit: Pressure Unit
+            shear_modulus (float): Shear modulus magnitude Unit: Pressure Unit
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
-            Output unit: consistent with input unit
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: consistent with input unit"""
         bulk_modulus = youngs_modulus * shear_modulus / (3 * (3 * shear_modulus - youngs_modulus))
         lame_parameter = (shear_modulus * (youngs_modulus - 2 * shear_modulus)) / (3 * shear_modulus - youngs_modulus)
         poissons_ratio = 0.5 * (youngs_modulus / shear_modulus) - 1
@@ -191,9 +174,7 @@ class ElasticPropertiesConverter:
             poissons_ratio (float): Poisson's ratio magnitude Unit: unitless
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
-            Output unit: consistent with input unit
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: consistent with input unit"""
         bulk_modulus = youngs_modulus / (3 * (1 - 2 * poissons_ratio))
         lame_parameter = youngs_modulus * poissons_ratio / ((1 + poissons_ratio) * (1 - 2 * poissons_ratio))
         shear_modulus = youngs_modulus / (2 * (1 + poissons_ratio))
@@ -212,9 +193,7 @@ class ElasticPropertiesConverter:
             p_wave_modulus (float): P-wave modulus magnitude Unit: Pressure Unit
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
-            Output unit: consistent with input unit
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: consistent with input unit"""
         S = math.sqrt(youngs_modulus**2 + 9 * p_wave_modulus**2 - 10 * youngs_modulus * p_wave_modulus)
 
         bulk_modulus = (3 * p_wave_modulus - youngs_modulus + S) / 6
@@ -235,9 +214,7 @@ class ElasticPropertiesConverter:
             shear_modulus (float): Shear modulus magnitude Unit: Pressure Unit
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
-            Output unit: consistent with input unit
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: consistent with input unit"""
         bulk_modulus = lame_parameter + (2 * shear_modulus / 3)
         youngs_modulus = shear_modulus * (3 * lame_parameter + 2 * shear_modulus) / (lame_parameter + shear_modulus)
         poissons_ratio = lame_parameter / (2 * (lame_parameter + shear_modulus))
@@ -256,9 +233,7 @@ class ElasticPropertiesConverter:
             poissons_ratio (float): Poisson's ratio magnitude Unit: unitless
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
-            Output unit: consistent with input unit
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: consistent with input unit"""
         bulk_modulus = lame_parameter * (1 + poissons_ratio) / (3 * poissons_ratio)
         youngs_modulus = (lame_parameter * (1 + poissons_ratio) * (1 - 2 * poissons_ratio)) / poissons_ratio
         shear_modulus = lame_parameter * (1 - 2 * poissons_ratio) / (2 * poissons_ratio)
@@ -277,9 +252,7 @@ class ElasticPropertiesConverter:
             p_wave_modulus (float): P-wave modulus magnitude Unit: Pressure Unit
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
-            Output unit: consistent with input unit
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: consistent with input unit"""
         bulk_modulus = (p_wave_modulus + 2 * lame_parameter) / 3
         youngs_modulus = ((p_wave_modulus - lame_parameter) * (p_wave_modulus + 2 * lame_parameter)) / (p_wave_modulus + lame_parameter)
         shear_modulus = (p_wave_modulus - lame_parameter) / 2
@@ -298,9 +271,7 @@ class ElasticPropertiesConverter:
             poissons_ratio (float): Poisson's ratio magnitude Unit: unitless
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
-            Output unit: consistent with input unit
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: consistent with input unit"""
         bulk_modulus = (2 * shear_modulus * (1 + poissons_ratio)) / (3 * (1 - 2 * poissons_ratio))
         youngs_modulus = 2 * shear_modulus * (1 + poissons_ratio)
         lame_parameter = 2 * shear_modulus * poissons_ratio / (1 - 2 * poissons_ratio)
@@ -319,9 +290,7 @@ class ElasticPropertiesConverter:
             p_wave_modulus (float): P-wave modulus magnitude Unit: Pressure Unit
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
-            Output unit: consistent with input unit
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: consistent with input unit"""
         bulk_modulus = p_wave_modulus - (4 / 3) * shear_modulus
         youngs_modulus = (shear_modulus * (3 * p_wave_modulus - 4 * shear_modulus)) / (p_wave_modulus - shear_modulus)
         lame_parameter = p_wave_modulus - 2 * shear_modulus
@@ -340,9 +309,7 @@ class ElasticPropertiesConverter:
             p_wave_modulus (float): P-wave modulus magnitude Unit: Pressure Unit
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
-            Output unit: consistent with input unit
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: consistent with input unit"""
         bulk_modulus = (p_wave_modulus * (1 + poissons_ratio)) / (3 * (1 - poissons_ratio))
         youngs_modulus = (p_wave_modulus * (1 + poissons_ratio) * (1 - 2 * poissons_ratio)) / (1 - poissons_ratio)
         lame_parameter = p_wave_modulus * poissons_ratio / (1 - poissons_ratio)
@@ -352,7 +319,7 @@ class ElasticPropertiesConverter:
 
     @staticmethod
     def convert_dynamic_elastic_properties_from_velocity(p_wave_velocity: float, s_wave_velocity: float, density: float) -> ElasticProperties:
-        """Convert Convert P and S Wave Velocity and Bulk Density to all elastic property types.
+        """Convert P and S Wave Velocity and Bulk Density to all elastic property types.
 
         Args:
             p_wave_velocity (float): Compressional Velocity Unit: Velocity Unit m/s
@@ -360,8 +327,7 @@ class ElasticPropertiesConverter:
             density (float): Bulk Density Unit: Density unit kg/m3
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Output Unit is in Pascal [Pa]
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: Pascal [Pa]"""
         shear_modulus = density * s_wave_velocity**2
         p_wave_modulus = density * p_wave_velocity**2
 
@@ -369,7 +335,7 @@ class ElasticPropertiesConverter:
 
     @staticmethod
     def convert_dynamic_elastic_properties_from_slowness(p_wave_slowness: float, s_wave_slowness: float, density: float) -> ElasticProperties:
-        """Convert Convert P and S Wave Slowness and Bulk Density to all elastic property types.
+        """Convert P and S Wave Slowness and Bulk Density to all elastic property types.
 
         Args:
             p_wave_slowness (float): Compressional Slowness Unit: us/ft
@@ -377,8 +343,7 @@ class ElasticPropertiesConverter:
             density (float): Bulk Density Unit: kg/m3
 
         Returns:
-            ElasticProperties: Dataclass containing computed elastic properties properties. See `ElasticProperties` for details. Output Unit is in Pascal [Pa]
-        """
+            ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Unit: Pascal [Pa]"""
         shear_modulus = density * (304800 / s_wave_slowness) ** 2
         p_wave_modulus = density * (304800 / p_wave_slowness) ** 2
 
