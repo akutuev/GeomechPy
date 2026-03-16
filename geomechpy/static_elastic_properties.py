@@ -9,7 +9,6 @@ class StaticElasticPropertiesConverter:
        Zhang, Yuliang, et al. "Extracting static elastic moduli of rock through elastic wave velocities." Acta Geophysica 72.2 (2024): 915-931.
    """
 
- 
    @staticmethod
    def dyn2sta_yme_bradord(yme_dyn: float) -> float:
       """
@@ -24,10 +23,6 @@ class StaticElasticPropertiesConverter:
 
       Returns:
          yme_sta_bradord: Static Young's modulus magnitude Bradford Unit: Mpsi
-
-      Example for input in:
-         >>> StaticElasticProperties.dyn2sta_yme_bradord(5)
-         StaticElasticProperties(yme_sta_bradford =)
       """
       
       multiplier = 0.04794626440600849
@@ -50,10 +45,6 @@ class StaticElasticPropertiesConverter:
 
       Returns:
          yme_sta_najib: Static Young's modulus magnitude Bradford Unit: Mpsi
-
-      Example for input in:
-         >>> StaticElasticProperties.dyn2sta_yme_najib(5)
-         StaticElasticProperties(yme_sta_bradford =)
       """
       multiplier = 0.07277314417314575
       exponent = 1.96
@@ -75,10 +66,6 @@ class StaticElasticPropertiesConverter:
 
       Returns:
          yme_sta_fuller: Static Young's modulus magnitude Fuller Unit: GPa
-
-      Example for input in:
-         >>> StaticElasticProperties.dyn2sta_yme_najib(20)
-         StaticElasticProperties(yme_sta_bradford =4.967602387961677)
       """
       multiplier = 0.08143824177457351
       exponent = 1.632
@@ -103,10 +90,6 @@ class StaticElasticPropertiesConverter:
 
       Returns:
          yme_sta_morales: Static Young's modulus magnitude Morales Unit: Mpsi
-
-      Example for input in:
-         >>> StaticElasticProperties.dyn2sta_yme_najib(20)
-         StaticElasticProperties(yme_sta_bradford =4.967602387961677)
       """
 
       if porosity < 0.15:
@@ -138,10 +121,6 @@ class StaticElasticPropertiesConverter:
 
       Returns:
          yme_sta_morales: Static Young's modulus magnitude Morales Unit: Mpsi
-
-      Example for input in:
-         >>> StaticElasticProperties.dyn2sta_yme_najib(20)
-         StaticElasticProperties(yme_sta_bradford =4.967602387961677)
       """
 
       yme_sta_power_law = multiplier * measurement**exponent
@@ -160,10 +139,6 @@ class StaticElasticPropertiesConverter:
 
       Returns:
          yme_sta_morales: Static Young's modulus magnitude Morales Unit: Mpsi
-
-      Example for input in:
-         >>> StaticElasticProperties.dyn2sta_yme_najib(20)
-         StaticElasticProperties(yme_sta_bradford =4.967602387961677)
       """
       yme_sta_linear_law = slope * measurement + intercept
 
@@ -186,10 +161,6 @@ class StaticElasticPropertiesConverter:
 
       Returns:
          yme_sta_morales: Static Young's modulus magnitude Morales Unit: GPa
-
-      Example for input in:
-         >>> StaticElasticProperties.dyn2sta_yme_najib(20)
-         StaticElasticProperties(yme_sta_bradford =4.967602387961677)
       """
 
       yme_sta_morales = multiplier * yme_dyn**exponent
@@ -210,13 +181,6 @@ class StaticElasticPropertiesConverter:
 
       Returns:
          yme_sta_constant: Static Young's modulus magnitude  Unit: Mpsi
-
-      Raises:
-         ValueError: In case if we need to check values
-
-      Example for input in:
-         >>> StaticElasticProperties.dyn2sta_yme_najib(20)
-         StaticElasticProperties(yme_sta_bradford =4.967602387961677)
       """
 
       yme_sta_constant = constant
@@ -240,13 +204,6 @@ class StaticElasticPropertiesConverter:
 
       Returns:
          pr_sta (float): Static Poisson's ratio Unit: [unitless]
-
-      Raises:
-         ValueError: In case if we need to check values
-
-      Example for input in:
-         >>> StaticElasticProperties.dyn2sta_yme_najib(20)
-         StaticElasticProperties(yme_sta_bradford =4.967602387961677)
       """
 
       yme_sta_constant = constant
@@ -270,13 +227,6 @@ class StaticElasticPropertiesConverter:
 
         Returns:
            alpha_const: Biot coefficient  Unit: unitless
-
-        Raises:
-           ValueError: In case if we need to check values
-
-        Example for input in:
-           >>> StaticElasticProperties.dyn2sta_yme_najib(20)
-           StaticElasticProperties(yme_sta_bradford =4.967602387961677)
         """
 
       biot_constant = constant

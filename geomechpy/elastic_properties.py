@@ -44,10 +44,6 @@ class ElasticPropertiesConverter:
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
             Output unit: consistent with input unit
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_from_bulk_and_youngs(19.7184,33.2748)
-            ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
         lame_parameter = 3 * bulk_modulus * (3 * bulk_modulus - youngs_modulus) / (9 * bulk_modulus - youngs_modulus)
         shear_modulus = 3 * bulk_modulus * youngs_modulus / (9 * bulk_modulus - youngs_modulus)
@@ -69,10 +65,6 @@ class ElasticPropertiesConverter:
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
             Output unit: consistent with input unit
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_from_bulk_and_lame(19.7184, 10.61851)
-            ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
         youngs_modulus = 9 * bulk_modulus * (bulk_modulus - lame_parameter) / (3 * bulk_modulus - lame_parameter)
         shear_modulus = 3 * (bulk_modulus - lame_parameter) / 2
@@ -94,10 +86,6 @@ class ElasticPropertiesConverter:
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
             Output unit: consistent with input unit
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_from_bulk_and_shear(19.7184, 13.6512)
-            ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
         youngs_modulus = 9 * bulk_modulus * shear_modulus / (3 * bulk_modulus + shear_modulus)
         lame_parameter = bulk_modulus - 2 * shear_modulus / 3
@@ -119,10 +107,6 @@ class ElasticPropertiesConverter:
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties  See `ElasticProperties` for details
             Output unit: consistent with input unit
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_from_bulk_and_poissons(40.56, 32.55)
-            ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
         youngs_modulus = 3 * bulk_modulus * (1 - 2 * poissons_ratio)
         lame_parameter = 3 * bulk_modulus * poissons_ratio / (1 + poissons_ratio)
@@ -144,10 +128,6 @@ class ElasticPropertiesConverter:
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
             Output unit: consistent with input unit
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_from_bulk_and_p_wave(19.7184, 37.92)
-            ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
         youngs_modulus = 9 * bulk_modulus * (p_wave_modulus - bulk_modulus) / (3 * bulk_modulus + p_wave_modulus)
         lame_parameter = (3 * bulk_modulus - p_wave_modulus) / 2
@@ -169,10 +149,6 @@ class ElasticPropertiesConverter:
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
             Output unit: consistent with input unit
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_from_youngs_and_lame(33.2748, 10.61851)
-            ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
         R = math.sqrt(youngs_modulus**2 + 9 * lame_parameter**2 + 2 * youngs_modulus * lame_parameter)
 
@@ -196,10 +172,6 @@ class ElasticPropertiesConverter:
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
             Output unit: consistent with input unit
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_from_youngs_and_shear(33.2748, 13.6512)
-            ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
         bulk_modulus = youngs_modulus * shear_modulus / (3 * (3 * shear_modulus - youngs_modulus))
         lame_parameter = (shear_modulus * (youngs_modulus - 2 * shear_modulus)) / (3 * shear_modulus - youngs_modulus)
@@ -221,10 +193,6 @@ class ElasticPropertiesConverter:
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
             Output unit: consistent with input unit
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_from_youngs_and_poissons(33.2748, 0.21875)
-            ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
         bulk_modulus = youngs_modulus / (3 * (1 - 2 * poissons_ratio))
         lame_parameter = youngs_modulus * poissons_ratio / ((1 + poissons_ratio) * (1 - 2 * poissons_ratio))
@@ -246,10 +214,6 @@ class ElasticPropertiesConverter:
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
             Output unit: consistent with input unit
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_from_youngs_and_p_wave(33.2748, 37.92)
-            ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
         S = math.sqrt(youngs_modulus**2 + 9 * p_wave_modulus**2 - 10 * youngs_modulus * p_wave_modulus)
 
@@ -273,10 +237,6 @@ class ElasticPropertiesConverter:
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
             Output unit: consistent with input unit
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_from_lame_and_shear(10.61851, 13.6512)
-            ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
         bulk_modulus = lame_parameter + (2 * shear_modulus / 3)
         youngs_modulus = shear_modulus * (3 * lame_parameter + 2 * shear_modulus) / (lame_parameter + shear_modulus)
@@ -298,10 +258,6 @@ class ElasticPropertiesConverter:
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
             Output unit: consistent with input unit
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_from_lame_and_poissons(10.61851, 0.21875)
-            ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
         bulk_modulus = lame_parameter * (1 + poissons_ratio) / (3 * poissons_ratio)
         youngs_modulus = (lame_parameter * (1 + poissons_ratio) * (1 - 2 * poissons_ratio)) / poissons_ratio
@@ -323,10 +279,6 @@ class ElasticPropertiesConverter:
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
             Output unit: consistent with input unit
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_from_lame_and_p_wave(10.61851, 37.92)
-            ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
         bulk_modulus = (p_wave_modulus + 2 * lame_parameter) / 3
         youngs_modulus = ((p_wave_modulus - lame_parameter) * (p_wave_modulus + 2 * lame_parameter)) / (p_wave_modulus + lame_parameter)
@@ -348,10 +300,6 @@ class ElasticPropertiesConverter:
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
             Output unit: consistent with input unit
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_from_shear_and_poissons(13.6512, 0.21875)
-            ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
         bulk_modulus = (2 * shear_modulus * (1 + poissons_ratio)) / (3 * (1 - 2 * poissons_ratio))
         youngs_modulus = 2 * shear_modulus * (1 + poissons_ratio)
@@ -373,10 +321,6 @@ class ElasticPropertiesConverter:
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
             Output unit: consistent with input unit
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_from_shear_and_p_wave(13.6512, 37.92)
-            ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
         bulk_modulus = p_wave_modulus - (4 / 3) * shear_modulus
         youngs_modulus = (shear_modulus * (3 * p_wave_modulus - 4 * shear_modulus)) / (p_wave_modulus - shear_modulus)
@@ -398,10 +342,6 @@ class ElasticPropertiesConverter:
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details
             Output unit: consistent with input unit
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_from_poissons_and_p_wave(0.21875, 37.92)
-            ElasticProperties(bulk_modulus=19.7184, youngs_modulus=33.2748, lame_parameter=10.617599999999998, shear_modulus=13.6512, poissons_ratio=0.21874999999999997, p_wave_modulus=37.919999999999995)
         """
         bulk_modulus = (p_wave_modulus * (1 + poissons_ratio)) / (3 * (1 - poissons_ratio))
         youngs_modulus = (p_wave_modulus * (1 + poissons_ratio) * (1 - 2 * poissons_ratio)) / (1 - poissons_ratio)
@@ -421,10 +361,6 @@ class ElasticPropertiesConverter:
 
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties. See `ElasticProperties` for details. Output Unit is in Pascal [Pa]
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_dynamic_elastic_properties_from_velocity(4000, 2400, 2370)
-            ElasticProperties(bulk_modulus=19718400000.0, youngs_modulus=33274800000.0, lame_parameter=10617600000, shear_modulus=13651200000, poissons_ratio=0.21875, p_wave_modulus=37920000000)
         """
         shear_modulus = density * s_wave_velocity**2
         p_wave_modulus = density * p_wave_velocity**2
@@ -442,10 +378,6 @@ class ElasticPropertiesConverter:
 
         Returns:
             ElasticProperties: Dataclass containing computed elastic properties properties. See `ElasticProperties` for details. Output Unit is in Pascal [Pa]
-
-        Example:
-            >>> ElasticPropertiesConverter.convert_dynamic_elastic_properties_from_slowness(76.2, 127, 2370)
-            ElasticProperties(bulk_modulus=19718400000.0, youngs_modulus=33274800000.0, lame_parameter=10617600000.0, shear_modulus=13651200000.0, poissons_ratio=0.21875, p_wave_modulus=37920000000.0)
         """
         shear_modulus = density * (304800 / s_wave_slowness) ** 2
         p_wave_modulus = density * (304800 / p_wave_slowness) ** 2
