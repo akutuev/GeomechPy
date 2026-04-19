@@ -112,8 +112,8 @@ class StaticElasticPropertiesConverter:
 
         Args:
            measurement (float): Dynamic Young's modulus magnitude. Unit: Mpsi
-           multiplier (float): TODO
-           exponent (float): TODO
+           multiplier (float): Custom multiplier - from core data regression or alternative power law correlation Unit: unitless
+           exponent (float): Custom exponent - from core data regression or alternative power law correlation  Unit: unitless
 
         Returns:
            yme_sta_morales: Static Young's modulus magnitude. Unit: Mpsi"""
@@ -122,25 +122,25 @@ class StaticElasticPropertiesConverter:
         return float(yme_sta_power_law)
 
     @staticmethod
-    def dyn2sta_yme_custom_linear_law(measurement: float, slope: float, intercept: float) -> float:
+    def dyn2sta_yme_custom_linear_law(yme_dyn: float, slope: float, intercept: float) -> float:
         """Convert dynamic to static Young's modulus using a custom linear law.
 
         Equation type: Linear law (y = a*x + b)
         Applicable for: Generic.
 
         Args:
-           measurement (float): TODO
-           slope (float):  TODO
-           intercept (float): TODO
+           yme_dyn (float): Dynamic Young's modulus magnitude Unit: Mpsi
+           slope (float):  custom slope - from core data regression or alternative linear law correlation Unit: unitless
+           intercept (float):  custom intercept - from core data regression or alternative linear law correlation Unit: unitless
 
         Returns:
            float: Static Young's modulus magnitude. Unit: Mpsi"""
-        yme_sta_linear_law = slope * measurement + intercept
+        yme_sta_linear_law = slope * yme_dyn + intercept
 
         return yme_sta_linear_law
 
     @staticmethod
-    def dyn2sta_yme_custom_exponential_law(measurement: float, multiplier: float, exponent: float) -> float:
+    def dyn2sta_yme_custom_exponential_law(yme_dyn: float, multiplier: float, exponent: float) -> float:
         """Convert dynamic to static Young's modulus using a custom exponential law.
 
         Equation type: Exponential law (y = a*exp(b*x))
@@ -150,13 +150,13 @@ class StaticElasticPropertiesConverter:
                         Weakly consolidated (>25%)
 
         Args:
-           measurement (float): TODO
-           multiplier (float): TODO
-           exponent (float): TODO
+            yme_dyn (float): Dynamic Young's modulus magnitude Unit: Mpsi
+            multiplier (float): custom multiplier - from core data regression or alternative exponential law correlation Unit: unitless
+            exponent (float): custom exponent - from core data regression or alternative exponential law correlation  Unit: unitless
 
         Returns:
            float: Static Young's modulus magnitude. Unit: Mpsi"""
-        yme_sta_exponential = multiplier * math.exp(exponent * measurement)
+        yme_sta_exponential = multiplier * math.exp(exponent * yme_dyn)
 
         return float(yme_sta_exponential)
 

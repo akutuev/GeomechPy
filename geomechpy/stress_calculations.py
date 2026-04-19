@@ -74,7 +74,10 @@ class HorizontalStressesCalculation:
 
     @staticmethod
     def calculate_stress_regime_q_factor(sigv: float, shmax: float, shmin: float) -> float:
-        """Calculates q factor represnting the str.
+        """Calculates q factor represnting the stress regime based on the order and relative magnitude of the three principle stresses.
+            Normal Stress Regime: sigv  > shmax > shmin --> 0 > q < 1
+            Strike slip Regime: shmax > sigv  > shmin --> 1 > q < 2
+            Reverse Faulting: shmax > shmin > sigv  --> 2 > q < 3
 
         Reference: Prats, M., Effect of Burial History on the Subsurface Horizontal Stresses of Formations Having Different Material Properties, SPE 9017-PA, 1981.
 
@@ -84,7 +87,7 @@ class HorizontalStressesCalculation:
             shmin (float): Minimum horizontal stress magnitude. Unit [psi].
 
         Returns:
-            q_factor (float): TODO"""
+            q_factor (float): q factor provides measure for the stress regime"""
         if sigv > shmax and shmax >= shmin:
             q_factor = (shmax - shmin) / (sigv - shmin)
         elif shmin < sigv and sigv <= shmax:
