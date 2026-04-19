@@ -140,45 +140,6 @@ class StaticElasticPropertiesConverter:
         return yme_sta_linear_law
 
     @staticmethod
-    def dyn2sta_yme_custom_exponential_law(yme_dyn: float, multiplier: float, exponent: float) -> float:
-        """Convert dynamic to static Young's modulus using a custom exponential law.
-
-        Equation type: Exponential law (y = a*exp(b*x))
-        Applicable for: Sandstones:
-                        Consolidated (10%-15%)
-                        Moderately Consolidated (15%-25%)
-                        Weakly consolidated (>25%)
-
-        Args:
-            yme_dyn (float): Dynamic Young's modulus magnitude Unit: Mpsi
-            multiplier (float): custom multiplier - from core data regression or alternative exponential law correlation Unit: unitless
-            exponent (float): custom exponent - from core data regression or alternative exponential law correlation  Unit: unitless
-
-        Returns:
-           float: Static Young's modulus magnitude. Unit: Mpsi"""
-        yme_sta_exponential = multiplier * math.exp(exponent * yme_dyn)
-
-        return float(yme_sta_exponential)
-
-    @staticmethod
-    def dyn2sta_yme_custom_constant_law(constant: float) -> float:
-        """Assign a constant value for static Young's modulus.
-
-        Equation type: Constant law (y = c)
-        Applicable for: Generic.
-
-        Reference: -
-
-        Args:
-           constant (float): Constant value for static Young's modulus. Unit: Mpsi
-
-        Returns:
-           float: Static Young's modulus magnitude. Unit: Mpsi"""
-        yme_sta_constant = constant
-
-        return yme_sta_constant
-
-    @staticmethod
     def dyn2sta_poissons_ratio(pr_dyn: float, multiplier: float) -> float:
         """Convert dynamic to static Poisson's ratio using a constant multiplier.
 
