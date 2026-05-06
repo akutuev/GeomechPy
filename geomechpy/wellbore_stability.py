@@ -73,6 +73,6 @@ class WellboreStabilityCalculation:
         Pw_t_z_r = (A - CC) / (1 + q)
         Pw_t_r_z = A - CC - q * B
 
-        pw_breakout = max[Pw_z_t_r, Pw_t_z_r, Pw_t_r_z]
+        pw_breakout = max(Pw_z_t_r, Pw_t_z_r, Pw_t_r_z)
 
         return float(pw_breakout)
