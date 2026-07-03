@@ -83,12 +83,3 @@ class TestGetCurve:
         )
         with pytest.raises(KeyError, match="DTCO, RHOB"):
             LasFileLoader.get_curve(well_log_data, "DTSM")
-
-
-class TestConvertDensityGCcToKgM3:
-    def test_converts_single_value(self) -> None:
-        assert LasFileLoader.convert_density_g_cc_to_kg_m3([2.4]) == pytest.approx([2400.0])
-
-    def test_converts_multiple_values(self) -> None:
-        result = LasFileLoader.convert_density_g_cc_to_kg_m3([2.4, 2.6, 2.65])
-        assert result == pytest.approx([2400.0, 2600.0, 2650.0])

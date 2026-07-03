@@ -79,14 +79,3 @@ class LasFileLoader:
             raise KeyError(f"Curve mnemonic '{mnemonic}' not found. Available mnemonics: {available}")
 
         return well_log_data.curves[mnemonic]
-
-    @staticmethod
-    def convert_density_g_cc_to_kg_m3(density_g_cc: list[float]) -> list[float]:
-        """Convert bulk density from grams per cubic centimeter (a common LAS RHOB unit) to kilograms per cubic meter.
-
-        Args:
-            density_g_cc (list[float]): Bulk density values. Unit: g/cc
-
-        Returns:
-            list[float]: Bulk density values. Unit: kg/m3"""
-        return [value * 1000 for value in density_g_cc]
