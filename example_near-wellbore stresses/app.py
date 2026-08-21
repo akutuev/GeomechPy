@@ -128,7 +128,18 @@ def polar_figure(result: pd.DataFrame, components: list[str], unit: str, depth_l
     return fig
 
 
-def components_figure(result: pd.DataFrame, components: list[str], unit: str, summary: dict) -> go.Figure:
+def _add_direction_markers(fig: go.Figure, directions: dict) -> None:
+    """Dotted guides at the SHmax- and Shmin-facing wall points."""
+    for theta_at, label in ((directions["theta_shmax"], "SHmax"), (directions["theta_shmin"], "Shmin")):
+        for x in (theta_at, theta_at + 180.0):
+            if 0 <= x <= 360:
+                fig.add_vline(x=x, line=dict(color=REF_COLOR, width=1, dash="dot"),
+                              annotation_text=label, annotation_position="top",
+                              annotation_font=dict(size=10))
+
+
+def components_figure(result: pd.DataFrame, components: list[str], unit: str, summary: dict,
+                      directions: dict) -> go.Figure:
     """Stress components against the angle around the borehole wall."""
     fig = go.Figure()
     for comp in components:
@@ -149,6 +160,7 @@ def components_figure(result: pd.DataFrame, components: list[str], unit: str, su
                                arrowcolor=REF_COLOR, ax=_annotation_offset(theta_at), ay=-28,
                                font=dict(size=11))
 
+    _add_direction_markers(fig, directions)
     fig.update_layout(
         title="Stress components vs. angle around the borehole wall",
         xaxis=dict(title="θ from top of hole (deg)", dtick=45, range=[0, 360], gridcolor=GRID_COLOR),
@@ -161,7 +173,7 @@ def components_figure(result: pd.DataFrame, components: list[str], unit: str, su
     return fig
 
 
-def principal_figure(result: pd.DataFrame, unit: str, summary: dict) -> go.Figure:
+def principal_figure(result: pd.DataFrame, unit: str, summary: dict, directions: dict) -> go.Figure:
     """Maximum and minimum principal stresses on the borehole wall."""
     fig = go.Figure()
     for comp in nw.PRINCIPAL_COMPONENTS:
@@ -180,6 +192,7 @@ def principal_figure(result: pd.DataFrame, unit: str, summary: dict) -> go.Figur
                        text=f"σ2 min @ {summary['theta_s2_min']:.0f}°", showarrow=True,
                        arrowhead=2, arrowsize=0.8, arrowcolor=REF_COLOR,
                        ax=_annotation_offset(summary["theta_s2_min"]), ay=28, font=dict(size=11))
+    _add_direction_markers(fig, directions)
     fig.update_layout(
         title="Principal stresses at the borehole wall",
         xaxis=dict(title="θ from top of hole (deg)", dtick=45, range=[0, 360], gridcolor=GRID_COLOR),
@@ -570,6 +583,7 @@ summary_psi = nw.wall_summary(result_psi)
 
 result = nw.convert_pressures(result_psi, nw.RESULT_PRESSURE_COLUMNS, out_unit)
 summary = nw.wall_summary(result)
+directions = nw.stress_direction_thetas(row)
 
 st.divider()
 m = st.columns(5)
@@ -583,6 +597,18 @@ for col, label, value, theta_at in (
 ):
     col.metric(f"{label} [{out_unit}]", f"{value:,.0f}")
     col.caption(f"at θ = {theta_at:.0f}°")
+
+st.caption(
+    f"θ = 0° is the top of hole, in the vertical plane bearing {row['AZI']:.0f}° from North. "
+    f"SHmax bears {row['SHMAX_AZI']:.0f}°, so the SHmax-facing wall sits at "
+    f"θ ≈ {directions['theta_shmax']:.0f}° / {directions['theta_shmax'] + 180:.0f}° and the "
+    f"Shmin-facing wall at θ ≈ {directions['theta_shmin']:.0f}° / "
+    f"{directions['theta_shmin'] + 180:.0f}°. The Kirsch solution puts σθθ at its **minimum** "
+    f"facing SHmax and its **maximum** facing Shmin"
+    + ("." if directions["exact"] else
+       f" — exact for a vertical hole; at {row['INC']:.0f}° inclination the wall circle is "
+       f"tilted, so treat these θ values as a guide.")
+)
 
 with st.expander("Inputs handed to geomechpy at this depth"):
     inputs = pd.DataFrame({
@@ -614,11 +640,13 @@ with tab_polar:
         "θ is measured from the top of hole (TOH) and increases clockwise looking down the "
         "borehole axis. The radial axis starts at the minimum plotted stress, not at zero, so "
         "negative (tensile) values stay visible — read the tick labels. σθθ usually dwarfs the "
-        "other components; de-select it above to inspect σrr and στz on their own scale."
+        "other components; de-select it above to inspect σrr and στz on their own scale. "
+        "σθθ is smallest on the SHmax-facing wall and largest on the Shmin-facing wall — see "
+        "the orientation note above the tabs for where those fall on the θ axis."
     )
 
 with tab_cart:
-    st.plotly_chart(components_figure(result, nw.PLOTTED_COMPONENTS, out_unit, summary),
+    st.plotly_chart(components_figure(result, nw.PLOTTED_COMPONENTS, out_unit, summary, directions),
                     width="stretch")
     st.caption(
         "σrθ and σrz are identically zero on the borehole wall (traction-free surface), so they "
@@ -626,7 +654,7 @@ with tab_cart:
     )
 
 with tab_principal:
-    st.plotly_chart(principal_figure(result, out_unit, summary), width="stretch")
+    st.plotly_chart(principal_figure(result, out_unit, summary, directions), width="stretch")
     st.plotly_chart(tortuosity_figure(result), width="stretch")
     st.caption(
         "σ1, σ2 and the tortuosity angle come from "
