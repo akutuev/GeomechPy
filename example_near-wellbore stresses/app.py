@@ -94,7 +94,8 @@ def _radial_range(values: np.ndarray) -> list[float]:
     return [lo - pad, hi + pad]
 
 
-def polar_figure(result: pd.DataFrame, components: list[str], unit: str, depth_label: str) -> go.Figure:
+def polar_figure(result: pd.DataFrame, components: list[str], unit: str, depth_label: str,
+                 directions: dict) -> go.Figure:
     """Stress distribution around the borehole wall, θ = 0° at top of hole."""
     fig = go.Figure()
     stacked = []
@@ -111,6 +112,20 @@ def polar_figure(result: pd.DataFrame, components: list[str], unit: str, depth_l
         ))
 
     rng = _radial_range(np.concatenate(stacked)) if stacked else [0.0, 1.0]
+
+    # Reference diameters showing where the stress field points, drawn in neutral
+    # grey so they never read as data. They are the only cue that θ is referenced
+    # to the well trajectory, not to SHmax.
+    suffix = "" if directions["exact"] else " (vertical-hole guide)"
+    for theta_at, label, dash in ((directions["theta_shmax"], "SHmax direction", "dot"),
+                                  (directions["theta_shmin"], "Shmin direction", "dash")):
+        fig.add_trace(go.Scatterpolar(
+            r=[rng[0], rng[1], None, rng[0], rng[1]],
+            theta=[theta_at, theta_at, None, theta_at + 180, theta_at + 180],
+            mode="lines", name=label + suffix,
+            line=dict(color=REF_COLOR, width=1, dash=dash), hoverinfo="skip",
+        ))
+
     fig.update_layout(
         title=f"Stress distribution around the borehole wall — {depth_label}",
         polar=dict(
@@ -130,7 +145,9 @@ def polar_figure(result: pd.DataFrame, components: list[str], unit: str, depth_l
 
 def _add_direction_markers(fig: go.Figure, directions: dict) -> None:
     """Dotted guides at the SHmax- and Shmin-facing wall points."""
-    for theta_at, label in ((directions["theta_shmax"], "SHmax"), (directions["theta_shmin"], "Shmin")):
+    suffix = "" if directions["exact"] else "*"
+    for theta_at, label in ((directions["theta_shmax"], "SHmax" + suffix),
+                            (directions["theta_shmin"], "Shmin" + suffix)):
         for x in (theta_at, theta_at + 180.0):
             if 0 <= x <= 360:
                 fig.add_vline(x=x, line=dict(color=REF_COLOR, width=1, dash="dot"),
@@ -420,14 +437,20 @@ with st.sidebar:
     with st.expander("6. Wellbore geometry & rock", expanded=True):
         shmax_azi_source = source_selector("SHMAX_AZI", mapped["SHMAX_AZI"], "constant")
         shmax_azimuth = st.slider("SHmax azimuth (deg from North)", 0.0, 360.0, 135.0, 1.0,
-                                  disabled=(shmax_azi_source == "column"))
+                                  disabled=(shmax_azi_source == "column"),
+                                  help="A property of the STRESS FIELD: the compass direction the "
+                                       "maximum horizontal stress points. Unrelated to where the "
+                                       "well is drilled.")
         inc_source = source_selector("INC", mapped["INC"], "constant")
         inclination = st.slider("Borehole inclination (deg)", 0.0, 90.0, 30.0, 1.0,
                                 disabled=(inc_source == "column"),
                                 help="0° = vertical, 90° = horizontal.")
         azi_source = source_selector("AZI", mapped["AZI"], "constant")
-        azimuth = st.slider("Borehole azimuth (deg from North)", 0.0, 360.0, 45.0, 1.0,
-                            disabled=(azi_source == "column"))
+        azimuth = st.slider("Borehole azimuth (deg from North)", 0.0, 360.0, 30.0, 1.0,
+                            disabled=(azi_source == "column"),
+                            help="A property of the WELL PATH: the compass direction the hole is "
+                                 "headed. This is what θ = 0° is referenced to — it is NOT the "
+                                 "SHmax azimuth.")
         pr_source = source_selector("PR", mapped["PR"], "constant")
         poisson_ratio = st.slider("Static Poisson's ratio", 0.05, 0.49, 0.25, 0.01,
                                   disabled=(pr_source == "column"))
@@ -598,17 +621,24 @@ for col, label, value, theta_at in (
     col.metric(f"{label} [{out_unit}]", f"{value:,.0f}")
     col.caption(f"at θ = {theta_at:.0f}°")
 
-st.caption(
-    f"θ = 0° is the top of hole, in the vertical plane bearing {row['AZI']:.0f}° from North. "
-    f"SHmax bears {row['SHMAX_AZI']:.0f}°, so the SHmax-facing wall sits at "
-    f"θ ≈ {directions['theta_shmax']:.0f}° / {directions['theta_shmax'] + 180:.0f}° and the "
-    f"Shmin-facing wall at θ ≈ {directions['theta_shmin']:.0f}° / "
-    f"{directions['theta_shmin'] + 180:.0f}°. The Kirsch solution puts σθθ at its **minimum** "
-    f"facing SHmax and its **maximum** facing Shmin"
-    + ("." if directions["exact"] else
-       f" — exact for a vertical hole; at {row['INC']:.0f}° inclination the wall circle is "
-       f"tilted, so treat these θ values as a guide.")
+st.markdown(
+    f"**Orientation** — these two azimuths are independent inputs:  \n"
+    f"• **SHmax azimuth {directions['shmax_azimuth']:.0f}°** — where the maximum horizontal "
+    f"*stress* points (a property of the stress field).  \n"
+    f"• **Borehole azimuth {directions['borehole_azimuth']:.0f}°** — where the *well* is headed "
+    f"(a property of the trajectory). **θ = 0° is referenced to this, not to SHmax.**  \n"
+    f"So the SHmax-facing wall sits at θ = {directions['shmax_azimuth']:.0f}° − "
+    f"{directions['borehole_azimuth']:.0f}° = **{directions['theta_shmax']:.0f}°** (and "
+    f"{directions['theta_shmax'] + 180:.0f}°), where σθθ is at its **minimum**; the Shmin-facing "
+    f"wall is 90° away at θ = **{directions['theta_shmin']:.0f}°** (and "
+    f"{directions['theta_shmin'] + 180:.0f}°), where σθθ is at its **maximum**."
 )
+if not directions["exact"]:
+    st.caption(
+        f"\\* Exact only while the hole is vertical. At {row['INC']:.0f}° inclination the wall "
+        f"circle is tilted out of horizontal, so θ no longer maps onto a compass bearing and the "
+        f"marked directions are a guide — the σθθ extremes read off the curves remain exact."
+    )
 
 with st.expander("Inputs handed to geomechpy at this depth"):
     inputs = pd.DataFrame({
@@ -635,14 +665,15 @@ with tab_polar:
         "Components to draw", nw.PLOTTED_COMPONENTS, default=nw.PLOTTED_COMPONENTS,
         format_func=lambda c: nw.COMPONENT_LABELS[c], key="polar_components",
     ) or ["SIGMA_TT"]
-    st.plotly_chart(polar_figure(result, chosen, out_unit, depth_label), width="stretch")
+    st.plotly_chart(polar_figure(result, chosen, out_unit, depth_label, directions), width="stretch")
     st.caption(
         "θ is measured from the top of hole (TOH) and increases clockwise looking down the "
         "borehole axis. The radial axis starts at the minimum plotted stress, not at zero, so "
         "negative (tensile) values stay visible — read the tick labels. σθθ usually dwarfs the "
         "other components; de-select it above to inspect σrr and στz on their own scale. "
-        "σθθ is smallest on the SHmax-facing wall and largest on the Shmin-facing wall — see "
-        "the orientation note above the tabs for where those fall on the θ axis."
+        "The grey dotted and dashed diameters mark the SHmax and Shmin directions: σθθ is "
+        "smallest across the SHmax diameter and largest across the Shmin one. They sit at "
+        "θ = SHmax azimuth − borehole azimuth, not at θ = 0°."
     )
 
 with tab_cart:
