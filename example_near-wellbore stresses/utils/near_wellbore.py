@@ -61,10 +61,10 @@ CURVE_LABELS = {
     "SHMIN": "Min. horizontal stress Shmin",
     "PP": "Pore pressure Pp",
     "PW": "Wellbore / mud pressure Pw",
-    "SHMAX_AZI": "SHmax azimuth (deg)",
+    "SHMAX_AZI": "SHmax azimuth — max. horizontal STRESS direction (deg)",
     "PR": "Static Poisson's ratio",
     "INC": "Borehole inclination (deg)",
-    "AZI": "Borehole azimuth (deg)",
+    "AZI": "Borehole azimuth — WELL TRAJECTORY direction (deg)",
 }
 
 # Curves carrying a pressure; everything else is an angle or unitless.
@@ -245,9 +245,18 @@ def guess_column(curve: str, columns: list[str]) -> int:
         "INC": ["inc", "incl", "dev", "deviation", "inclination", "drift"],
         "AZI": ["azi", "azim", "azimuth", "hazi", "bearing"],
     }
+    # A column such as AZI_SHMAX starts with "azi", so without this guard the
+    # borehole azimuth would silently inherit the SHmax azimuth column.
+    excluded = {
+        "AZI": ("shmax", "sh_max", "shmin", "sh_min", "stress"),
+        "INC": ("shmax", "shmin"),
+    }.get(curve, ())
+
     lowered = [c.lower().strip() for c in columns]
     for alias in aliases[curve]:
         for i, col in enumerate(lowered):
+            if excluded and any(token in col for token in excluded):
+                continue
             if col == alias or col.startswith(alias):
                 return i + 1  # +1 for the '-- not mapped --' placeholder at index 0
     return 0
@@ -294,12 +303,16 @@ def generate_sample_data(top: float = 6000.0, base: float = 12000.0, step: float
     shmax_grad = 0.86 + 0.13 * frac              # stress regime rotates with depth
     mud_grad = pp_grad + 0.045
 
-    # The borehole is drilled along the SHmax azimuth, so θ = 0° (top of hole)
-    # faces SHmax. That puts the σθθ minimum at θ = 0° / 180° and the maximum at
-    # θ = 90° / 270°, which is the orientation the Kirsch solution predicts. A
-    # sample offset by 90° would put the maximum at θ = 0° and read as if the
-    # hoop stress peaked in the SHmax direction.
-    shmax_azimuth = 135.0
+    # These two azimuths are independent and must not be confused:
+    #   shmax_azimuth   - a property of the STRESS FIELD (where SHmax points)
+    #   borehole_azimuth - a property of the WELL PATH (where the hole is headed)
+    # They are deliberately different here, and deliberately not 0° or 90° apart:
+    # either of those special cases would make θ = 0° land exactly on SHmax or on
+    # Shmin and hide the fact that θ is referenced to the well, not to the stress
+    # field. With this pair the SHmax-facing wall sits at θ = 105°, so the σθθ
+    # minimum appears there rather than at θ = 0°.
+    shmax_azimuth = 135.0     # stress field
+    borehole_azimuth = 30.0   # well trajectory
 
     return pd.DataFrame({
         "DEPTH": tvd,
@@ -311,7 +324,7 @@ def generate_sample_data(top: float = 6000.0, base: float = 12000.0, step: float
         "SHMAX_AZI": np.full(n, shmax_azimuth),
         "PR": 0.22 + 0.06 * frac,
         "INC": np.linspace(5.0, 65.0, n),   # builds angle with depth
-        "AZI": np.full(n, shmax_azimuth),
+        "AZI": np.full(n, borehole_azimuth),
     }).round(4)
 
 
@@ -551,8 +564,13 @@ def stress_direction_thetas(row) -> dict:
     This is display geometry for labelling the charts — the stresses themselves
     are untouched and come from geomechpy.
     """
-    offset = (float(row["SHMAX_AZI"]) - float(row["AZI"])) % 180.0
+    shmax_azimuth = float(row["SHMAX_AZI"])    # stress field
+    borehole_azimuth = float(row["AZI"])       # well trajectory
+    offset = (shmax_azimuth - borehole_azimuth) % 180.0
     return {
+        "shmax_azimuth": shmax_azimuth,
+        "borehole_azimuth": borehole_azimuth,
+        "offset": offset,
         "theta_shmax": offset,
         "theta_shmin": (offset + 90.0) % 180.0,
         "exact": abs(float(row["INC"])) < 1e-9,
