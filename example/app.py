@@ -1006,45 +1006,114 @@ with tab_qc:
 # --- Tab 8: Sensitivity analysis (Tornado plot) -----------------------------
 with tab_tornado:
     st.subheader("Sensitivity Analysis (Tornado Plot)")
-    st.markdown(
-        "Using the loaded data as the *base case*, each input (GR, RHOB, DTCO, DTSM, POROSITY and "
-        "the static YME multiplier) is varied one at a time by the selected percentage while everything "
-        "else is held fixed, and the workflow is recomputed. Bars show how the depth-averaged target "
-        "moves — longer bar = more sensitive. GR has no bar unless the target depends on it "
-        "(e.g. GR-linear FANG); POROSITY only matters for the Morales static method."
-    )
     if st.session_state.raw_df is None:
         st.info("👈 Load data in the sidebar first — the tornado plot needs a base case.")
     else:
-        c1, c2 = st.columns(2)
-        tornado_targets = list(mc.TORNADO_TARGETS)
-        if stress_params is not None:
-            tornado_targets += mc.TORNADO_STRESS_TARGETS
-        target_options = [mc.display_name(t, unit_system) for t in tornado_targets]
-        target_label_sel = c1.selectbox("Target Output", target_options, index=0, key="tornado_target",
-                                        help="Result whose sensitivity is analysed (depth-averaged mean).")
-        target_canonical = tornado_targets[target_options.index(target_label_sel)]
-        variation_pct = c2.select_slider("Variation Range", options=[5, 10, 20], value=10,
-                                         format_func=lambda v: f"±{v}%", key="tornado_pct")
+        LOG_MODE = "Input logs (recompute full workflow)"
+        PARAM_MODE = "Governing parameters (recompute one equation)"
+        variation_mode = st.radio(
+            "Variation type",
+            [LOG_MODE, PARAM_MODE],
+            key="tornado_mode",
+            help=(
+                "Input logs: perturb a raw curve (GR, RHOB, sonic, porosity) or the static-YME "
+                "multiplier and re-run the whole workflow.\n\n"
+                "Governing parameters: perturb the actual inputs of one result's equation — "
+                "e.g. Shmin varies with Sv, Pp, Poisson's ratio, YME, Biot and the tectonic strains."
+            ),
+        )
 
-        if st.button("🌪️ Generate Tornado Plot", type="primary", key="tornado_btn"):
-            try:
-                with st.spinner("Recomputing the workflow for each input variation..."):
-                    fig, table, base_disp, skipped = mc.generate_tornado_plot(
-                        st.session_state.raw_df, column_map, target_canonical, variation_pct,
-                        **workflow_settings,
-                    )
-                st.session_state.tornado = {
-                    "fig": fig, "table": table, "base": base_disp, "skipped": skipped,
-                    "target_label": mc.display_name(target_canonical, unit_system),
-                    "pct": variation_pct, "units": unit_system, "method": method_label,
-                }
-            except ValueError as exc:
-                st.session_state.tornado = None
-                st.error(f"⚠️ {exc}")
-            except Exception as exc:  # keep the app alive on unexpected input
-                st.session_state.tornado = None
-                st.error(f"Unexpected error during sensitivity analysis: {exc}")
+        # ----- Mode A: vary the raw input logs, recompute the full workflow -----
+        if variation_mode == LOG_MODE:
+            st.markdown(
+                "Using the loaded data as the *base case*, each input (GR, RHOB, DTCO, DTSM, POROSITY and "
+                "the static YME multiplier) is varied one at a time by the selected percentage while "
+                "everything else is held fixed, and the workflow is recomputed. Bars show how the "
+                "depth-averaged target moves — longer bar = more sensitive. GR has no bar unless the "
+                "target depends on it (e.g. GR-linear FANG); POROSITY only matters for the Morales "
+                "static method."
+            )
+            c1, c2 = st.columns(2)
+            tornado_targets = list(mc.TORNADO_TARGETS)
+            if stress_params is not None:
+                tornado_targets += mc.TORNADO_STRESS_TARGETS
+            target_options = [mc.display_name(t, unit_system) for t in tornado_targets]
+            target_label_sel = c1.selectbox("Target Output", target_options, index=0, key="tornado_target",
+                                            help="Result whose sensitivity is analysed (depth-averaged mean).")
+            target_canonical = tornado_targets[target_options.index(target_label_sel)]
+            variation_pct = c2.select_slider("Variation Range", options=[5, 10, 20], value=10,
+                                             format_func=lambda v: f"±{v}%", key="tornado_pct")
+
+            if st.button("🌪️ Generate Tornado Plot", type="primary", key="tornado_btn"):
+                try:
+                    with st.spinner("Recomputing the workflow for each input variation..."):
+                        fig, table, base_disp, skipped = mc.generate_tornado_plot(
+                            st.session_state.raw_df, column_map, target_canonical, variation_pct,
+                            **workflow_settings,
+                        )
+                    st.session_state.tornado = {
+                        "fig": fig, "table": table, "base": base_disp, "skipped": skipped,
+                        "target_label": mc.display_name(target_canonical, unit_system),
+                        "pct": variation_pct, "units": unit_system, "method": method_label,
+                        "skipped_note": "Skipped (not mapped or could not be recomputed): ",
+                    }
+                except ValueError as exc:
+                    st.session_state.tornado = None
+                    st.error(f"⚠️ {exc}")
+                except Exception as exc:  # keep the app alive on unexpected input
+                    st.session_state.tornado = None
+                    st.error(f"Unexpected error during sensitivity analysis: {exc}")
+
+        # ----- Mode B: vary the governing-equation parameters of one result -----
+        else:
+            st.markdown(
+                "Pick a computed result and perturb the parameters of **its own equation** one at a "
+                "time by ±the selected percentage, holding the others at their base value. This is a "
+                "*local* sensitivity — the target's equation is recomputed directly from the base-case "
+                "profile, so it isolates how each governing input drives the output:"
+            )
+            st.markdown(
+                "- **Shmin / SHmax** (poroelastic): Sv, Pp, Poisson's ratio, YME, Biot coefficient, "
+                "tectonic strains EX & EY\n"
+                "- **Mud weight – breakout**: Sv, Pp, Shmin, SHmax, UCS, friction angle, Poisson's ratio\n"
+                "- **Mud weight – breakdown**: Shmin, SHmax, Pp, tensile strength"
+            )
+            if results is None or not has_stress:
+                st.warning(
+                    "This mode needs a completed **stress** run (Sv, Pp, Shmin, SHmax and wellbore "
+                    "stability). Enable *Advanced stress modelling* in the sidebar and press "
+                    "**Run / update model**, then come back here."
+                )
+            else:
+                c1, c2 = st.columns(2)
+                param_options = [mc.display_name(t, unit_system) for t in mc.TORNADO_PARAM_TARGETS]
+                param_label_sel = c1.selectbox("Target Output", param_options, index=0,
+                                               key="tornado_param_target",
+                                               help="Result whose governing parameters are perturbed.")
+                target_canonical = mc.TORNADO_PARAM_TARGETS[param_options.index(param_label_sel)]
+                variation_pct = c2.select_slider("Variation Range", options=[5, 10, 20], value=10,
+                                                 format_func=lambda v: f"±{v}%", key="tornado_param_pct")
+
+                if st.button("🌪️ Generate Tornado Plot", type="primary", key="tornado_param_btn"):
+                    try:
+                        with st.spinner("Recomputing the governing equation for each parameter..."):
+                            fig, table, base_disp, skipped = mc.generate_parameter_tornado_plot(
+                                results, target_canonical, variation_pct,
+                                unit_system=unit_system, stress_params=stress_params,
+                                tstr_multiplier=tstr_multiplier,
+                            )
+                        st.session_state.tornado = {
+                            "fig": fig, "table": table, "base": base_disp, "skipped": skipped,
+                            "target_label": mc.display_name(target_canonical, unit_system),
+                            "pct": variation_pct, "units": unit_system, "method": method_label,
+                            "skipped_note": "Skipped (could not be recomputed): ",
+                        }
+                    except ValueError as exc:
+                        st.session_state.tornado = None
+                        st.error(f"⚠️ {exc}")
+                    except Exception as exc:  # keep the app alive on unexpected input
+                        st.session_state.tornado = None
+                        st.error(f"Unexpected error during sensitivity analysis: {exc}")
 
         tornado = st.session_state.tornado
         if tornado is not None:
@@ -1053,7 +1122,7 @@ with tab_tornado:
             st.markdown("**Per-parameter results** (sorted by impact):")
             st.dataframe(tornado["table"].style.format(precision=3), use_container_width=True, hide_index=True)
             if tornado["skipped"]:
-                st.info("Skipped (not mapped or could not be recomputed): " + ", ".join(tornado["skipped"]))
+                st.info(tornado.get("skipped_note", "Skipped: ") + ", ".join(tornado["skipped"]))
             st.caption(
                 f"Generated with ±{tornado['pct']}% variation · {tornado['units']} · "
                 f"static method: {tornado['method']}. Re-generate after changing data or settings."
