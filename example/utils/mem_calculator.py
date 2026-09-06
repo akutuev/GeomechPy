@@ -1345,31 +1345,10 @@ def run_tornado_analysis(
     return tornado, base_value, skipped
 
 
-def generate_tornado_plot(
-    df: pd.DataFrame,
-    column_map: dict[str, str],
-    target_output: str,
-    variation_pct: float = 10.0,
-    **settings,
-) -> tuple[go.Figure, pd.DataFrame, float, list[str]]:
-    """Run the tornado analysis and build the Plotly figure.
-
-    settings are forwarded to run_tornado_analysis (method_label,
-    calibration_multiplier, pr_multiplier, tstr_multiplier, custom_a,
-    custom_b, unit_system). Values are converted to the selected unit
-    system for display.
-
-    Returns:
-        fig: horizontal-bar tornado chart, largest swing on top.
-        table: per-parameter results in display units (for st.dataframe).
-        base_display: base-case target value in display units.
-        skipped: parameters that could not be varied.
-    """
-    unit_system = settings.get("unit_system", OILFIELD)
-    tornado, base_value, skipped = run_tornado_analysis(
-        df, column_map, target_output, variation_pct, **settings
-    )
-
+def _build_tornado_figure(tornado: pd.DataFrame, base_value: float, target_output: str,
+                          variation_pct: float, unit_system: str, subtitle: str = "") -> tuple[go.Figure, pd.DataFrame, float]:
+    """Shared horizontal-bar tornado figure + display table from a tornado frame
+    (Parameter, low, high, pct_low, pct_high, swing) in canonical units."""
     _, _, factor = _spec(target_output, unit_system)
     target_label = display_name(target_output, unit_system)
     base_display = base_value * factor
@@ -1387,50 +1366,31 @@ def generate_tornado_plot(
 
     fig = go.Figure()
     fig.add_bar(
-        y=plot["Parameter"],
-        x=plot["delta_low"],
-        base=base_display,
-        orientation="h",
-        name=f"Input -{pct}%",
-        marker_color="#d95f02",
+        y=plot["Parameter"], x=plot["delta_low"], base=base_display, orientation="h",
+        name=f"-{pct}%", marker_color="#d95f02",
         customdata=np.stack([plot["low"], plot["pct_low"]], axis=-1),
-        hovertemplate=(
-            "%{y} -" + pct + "%<br>"
-            + target_label + ": %{customdata[0]:.3f} (%{customdata[1]:+.2f}% vs base)"
-            "<extra></extra>"
-        ),
+        hovertemplate=("%{y} -" + pct + "%<br>" + target_label
+                       + ": %{customdata[0]:.3f} (%{customdata[1]:+.2f}% vs base)<extra></extra>"),
     )
     fig.add_bar(
-        y=plot["Parameter"],
-        x=plot["delta_high"],
-        base=base_display,
-        orientation="h",
-        name=f"Input +{pct}%",
-        marker_color="#1f77b4",
+        y=plot["Parameter"], x=plot["delta_high"], base=base_display, orientation="h",
+        name=f"+{pct}%", marker_color="#1f77b4",
         customdata=np.stack([plot["high"], plot["pct_high"]], axis=-1),
-        hovertemplate=(
-            "%{y} +" + pct + "%<br>"
-            + target_label + ": %{customdata[0]:.3f} (%{customdata[1]:+.2f}% vs base)"
-            "<extra></extra>"
-        ),
+        hovertemplate=("%{y} +" + pct + "%<br>" + target_label
+                       + ": %{customdata[0]:.3f} (%{customdata[1]:+.2f}% vs base)<extra></extra>"),
     )
-    fig.add_vline(
-        x=base_display,
-        line_dash="dash",
-        line_color="gray",
-        annotation_text=f"base = {base_display:.3f}",
-        annotation_position="top",
-    )
+    fig.add_vline(x=base_display, line_dash="dash", line_color="gray",
+                  annotation_text=f"base = {base_display:.3f}", annotation_position="top")
+    title = f"Tornado plot — sensitivity of {target_label} to ±{pct}% variation"
+    if subtitle:
+        title += f"<br><sub>{subtitle}</sub>"
     fig.update_layout(
-        barmode="overlay",
-        title=f"Tornado plot — sensitivity of {target_label} to ±{pct}% input variation",
-        xaxis_title=f"Depth-averaged {target_label}",
-        yaxis_title="Varied input parameter",
-        height=max(360, 90 * len(plot) + 140),
+        barmode="overlay", title=title,
+        xaxis_title=f"Depth-averaged {target_label}", yaxis_title="Varied parameter",
+        height=max(360, 90 * len(plot) + 150),
         legend=dict(orientation="h", yanchor="bottom", y=1.04),
-        margin=dict(t=110, b=40),
+        margin=dict(t=120, b=40),
     )
-
     table = t[["Parameter", "low", "high", "pct_low", "pct_high", "swing"]].rename(
         columns={
             "low": f"Target @ -{pct}%",
@@ -1439,5 +1399,203 @@ def generate_tornado_plot(
             "pct_high": "Δ% @ high",
             "swing": f"Swing [{display_unit(target_output, unit_system)}]",
         }
+    )
+    return fig, table, base_display
+
+
+def generate_tornado_plot(
+    df: pd.DataFrame,
+    column_map: dict[str, str],
+    target_output: str,
+    variation_pct: float = 10.0,
+    **settings,
+) -> tuple[go.Figure, pd.DataFrame, float, list[str]]:
+    """Input-log tornado: perturb raw logs (+ static YME multiplier) and
+    recompute the whole workflow. Returns (fig, table, base_display, skipped)."""
+    unit_system = settings.get("unit_system", OILFIELD)
+    tornado, base_value, skipped = run_tornado_analysis(
+        df, column_map, target_output, variation_pct, **settings
+    )
+    fig, table, base_display = _build_tornado_figure(
+        tornado, base_value, target_output, variation_pct, unit_system,
+        subtitle="Varying input logs (full workflow recomputed)",
+    )
+    return fig, table, base_display, skipped
+
+
+# ---------------------------------------------------------------------------
+# NEW: Parameter-mode tornado — vary the governing-equation inputs of a
+# derived output (e.g. Shmin from Sv, Pp, Poisson's ratio, YME, Biot, EX, EY)
+# instead of the raw logs.
+# ---------------------------------------------------------------------------
+
+# Derived outputs whose governing parameters can be perturbed directly.
+TORNADO_PARAM_TARGETS = ["SHMIN_MPA", "SHMAX_MPA", "MW_BREAKOUT_GCC", "MW_BREAKDOWN_GCC"]
+
+_PARAM_LABEL = {
+    "sv": "Sv (overburden)", "pp": "Pp (pore pressure)",
+    "pr": "Poisson's ratio (static)", "yme": "YME (static)",
+    "biot": "Biot coefficient", "ex": "Tectonic strain EX", "ey": "Tectonic strain EY",
+    "shmin": "Shmin", "shmax": "SHmax", "ucs": "UCS", "fang": "Friction angle", "tstr": "TSTR",
+}
+
+# Governing parameters that drive each target (order = display order).
+TORNADO_TARGET_PARAMS = {
+    "SHMIN_MPA": ["sv", "pp", "pr", "yme", "biot", "ex", "ey"],
+    "SHMAX_MPA": ["sv", "pp", "pr", "yme", "biot", "ex", "ey"],
+    "MW_BREAKOUT_GCC": ["sv", "pp", "shmin", "shmax", "ucs", "fang", "pr"],
+    "MW_BREAKDOWN_GCC": ["shmin", "shmax", "pp", "tstr"],
+}
+
+
+def run_parameter_tornado(
+    results: pd.DataFrame,
+    target_output: str,
+    variation_pct: float = 10.0,
+    *,
+    stress_params: dict | None = None,
+    tstr_multiplier: float = 0.15,
+) -> tuple[pd.DataFrame, float, list[str]]:
+    """One-at-a-time sensitivity of a DERIVED output to its governing-equation
+    parameters (not the raw logs). The target's equation is recomputed directly
+    from the base-case arrays in `results`, scaling one parameter at a time by
+    ±variation_pct while holding the others fixed.
+
+    Returns (tornado_df, base_value_canonical, skipped) — same shape as
+    run_tornado_analysis so the figure builder is shared.
+    """
+    if target_output not in TORNADO_TARGET_PARAMS:
+        raise ValueError(f"Parameter tornado is not available for '{target_output}'.")
+    needed = {"SV_MPA", "PP_MPA", "SHMIN_MPA", "SHMAX_MPA", "PR_STA", "YME_STA_MPSI", "DEPTH"}
+    if not needed.issubset(results.columns):
+        raise ValueError("Parameter tornado needs a completed stress run (Sv, Pp, Shmin, SHmax, PR, YME).")
+
+    n = len(results)
+    p = {**default_stress_params(), **(stress_params or {})}
+    to_ft = M_TO_FT if p["depth_unit"] == "m" else 1.0
+    tvd_ft = pd.to_numeric(results["DEPTH"], errors="coerce").to_numpy(float) * to_ft
+
+    def arr(col: str, conv: float = 1.0):
+        return pd.to_numeric(results[col], errors="coerce").to_numpy(float) * conv
+
+    base: dict = {
+        "sv": arr("SV_MPA", MPA_TO_PSI),
+        "pp": arr("PP_MPA", MPA_TO_PSI),
+        "pr": arr("PR_STA"),
+        "yme": arr("YME_STA_MPSI"),
+        "shmin": arr("SHMIN_MPA", MPA_TO_PSI),
+        "shmax": arr("SHMAX_MPA", MPA_TO_PSI),
+        "ucs": arr("UCS_PSI") if "UCS_PSI" in results.columns else arr("UCS_MPA", MPA_TO_PSI),
+        "fang": arr("FANG_DEG"),
+        "tstr": arr("TSTR_PSI") if "TSTR_PSI" in results.columns else arr("TSTR_MPA", MPA_TO_PSI),
+        "biot": float(p["biot"]), "ex": float(p["ex"]), "ey": float(p["ey"]),
+    }
+    shmax_mult = float(p.get("shmax_multiplier", 1.1))
+    shmax_is_mult = p.get("shmax_method") == "multiplier"
+    _ARRAY_KEYS = ("sv", "pp", "pr", "yme", "shmin", "shmax", "ucs", "fang", "tstr")
+
+    def make_vals(scale_key: str | None = None, factor: float = 1.0) -> dict:
+        v = dict(base)
+        for k in _ARRAY_KEYS:
+            v[k] = base[k].copy()
+        if scale_key is not None:
+            v[scale_key] = base[scale_key] * factor
+        return v
+
+    def recompute(vals: dict):
+        """Return the target array in CANONICAL units (MPa for stresses, g/cc for MW)."""
+        if target_output in ("SHMIN_MPA", "SHMAX_MPA"):
+            out = np.full(n, np.nan)
+            for i in range(n):
+                sv, pp, pr, yme = vals["sv"][i], vals["pp"][i], vals["pr"][i], vals["yme"][i]
+                if not (np.isfinite(sv) and np.isfinite(pp) and np.isfinite(pr) and np.isfinite(yme)):
+                    continue
+                if not (0.0 < pr < 0.5):
+                    continue
+                try:
+                    hs = HorizontalStressesCalculation.calculate_poroelastic_horizontal_stresses(
+                        overburden_stress=sv, pore_pressure=pp, poisson_ratio=pr,
+                        youngs_modulus=yme, biot_coefficient=vals["biot"],
+                        EX=vals["ex"], EY=vals["ey"])
+                except (ValueError, ZeroDivisionError, OverflowError):
+                    continue
+                if target_output == "SHMIN_MPA":
+                    out[i] = hs.shmin
+                else:
+                    out[i] = hs.shmin * shmax_mult if shmax_is_mult else hs.shmax
+            return out * PSI_TO_MPA
+        # mud-weight targets: recompute limit pressure (psi) then EMW (g/cc)
+        pw = np.full(n, np.nan)
+        for i in range(n):
+            if target_output == "MW_BREAKDOWN_GCC":
+                sx, sn, pp, ts = vals["shmax"][i], vals["shmin"][i], vals["pp"][i], vals["tstr"][i]
+                if not all(np.isfinite(x) for x in (sx, sn, pp, ts)):
+                    continue
+                try:
+                    pw[i] = WellboreStabilityCalculation.calculate_breakdown_calculation_vertical_well_analytical(
+                        shmax=sx, shmin=sn, pprs=pp, tstr=ts)
+                except (ValueError, ZeroDivisionError, OverflowError):
+                    continue
+            else:  # MW_BREAKOUT_GCC
+                sx, sn, pp, sv = vals["shmax"][i], vals["shmin"][i], vals["pp"][i], vals["sv"][i]
+                uc, fa, pr = vals["ucs"][i], vals["fang"][i], vals["pr"][i]
+                if not all(np.isfinite(x) for x in (sx, sn, pp, sv, uc, fa, pr)):
+                    continue
+                try:
+                    pw[i] = WellboreStabilityCalculation.calculate_breakout_calculation_vertical_well_mohr_coulomb_analytical(
+                        shmax=sx, shmin=sn, pprs=pp, overburden_stress=sv, ucs=uc, fang=fa, pr_sta=pr)
+                except (ValueError, ZeroDivisionError, OverflowError):
+                    continue
+        with np.errstate(divide="ignore", invalid="ignore"):
+            return np.where(tvd_ft > 0, pw / (PSI_FT_PER_GCC * tvd_ft), np.nan)
+
+    base_value = float(np.nanmean(recompute(make_vals())))
+    if not np.isfinite(base_value):
+        raise ValueError("The base case produced no valid values for the selected target.")
+
+    frac = float(variation_pct) / 100.0
+    rows: list[dict] = []
+    skipped: list[str] = []
+    for key in TORNADO_TARGET_PARAMS[target_output]:
+        try:
+            low = float(np.nanmean(recompute(make_vals(key, 1.0 - frac))))
+            high = float(np.nanmean(recompute(make_vals(key, 1.0 + frac))))
+        except (ValueError, ZeroDivisionError, OverflowError):
+            skipped.append(_PARAM_LABEL.get(key, key))
+            continue
+        if not (np.isfinite(low) and np.isfinite(high)):
+            skipped.append(_PARAM_LABEL.get(key, key))
+            continue
+        rows.append({
+            "Parameter": _PARAM_LABEL.get(key, key), "low": low, "high": high,
+            "pct_low": 100.0 * (low - base_value) / base_value if base_value else np.nan,
+            "pct_high": 100.0 * (high - base_value) / base_value if base_value else np.nan,
+        })
+
+    tornado = pd.DataFrame(rows)
+    if tornado.empty:
+        raise ValueError("No governing parameters could be varied for this target.")
+    tornado["swing"] = (tornado["high"] - tornado["low"]).abs()
+    tornado = tornado.sort_values("swing", ascending=False).reset_index(drop=True)
+    return tornado, base_value, skipped
+
+
+def generate_parameter_tornado_plot(
+    results: pd.DataFrame,
+    target_output: str,
+    variation_pct: float = 10.0,
+    *,
+    unit_system: str = OILFIELD,
+    stress_params: dict | None = None,
+    tstr_multiplier: float = 0.15,
+) -> tuple[go.Figure, pd.DataFrame, float, list[str]]:
+    """Governing-parameter tornado + figure. Same return shape as generate_tornado_plot."""
+    tornado, base_value, skipped = run_parameter_tornado(
+        results, target_output, variation_pct,
+        stress_params=stress_params, tstr_multiplier=tstr_multiplier,
+    )
+    fig, table, base_display = _build_tornado_figure(
+        tornado, base_value, target_output, variation_pct, unit_system,
+        subtitle="Varying governing-equation parameters (others held at base)",
     )
     return fig, table, base_display, skipped
