@@ -17,7 +17,7 @@ import plotly.graph_objects as go
 import streamlit as st
 from plotly.subplots import make_subplots
 
-from utils import mem_calculator as mc
+import mem_calculator as mc
 
 # ---------------------------------------------------------------------------
 # Page setup & session state
