@@ -1,21 +1,7 @@
 import math
-from enum import IntEnum
 
 import numpy as np
 import numpy.typing as npt
-
-
-class Lithology(IntEnum):
-    """Lithology codes used for mechanical stratigraphy classification.
-
-    The integer values are the codes emitted by the lithology-determination
-    functions and are intended to be written directly to a discrete log curve.
-    """
-
-    SAND = 0
-    SHALE = 1
-    LIMESTONE = 2
-    COAL = 6
 
 
 def rotate_stress_to_shmax(
@@ -91,37 +77,25 @@ def determine_lithology(
     coal_flag: bool = False,
     limestone_flag: bool = False,
 ) -> int:
-    """Determine the mechanical stratigraphy lithology from a Gamma Ray reading.
-
-    The Gamma Ray log is used to discriminate shale from non-shale rock: a reading
-    at or above the threshold is classified as shale, otherwise the interval is
-    treated as clean (sandstone). Coal and limestone are not resolvable from Gamma
-    Ray alone, so they are supplied as external flags that override the Gamma Ray
-    classification. The coal flag takes precedence over the limestone flag.
-
-    The returned integer follows the mechanical stratigraphy convention encoded in
-    :class:`Lithology`: Sand = 0, Shale = 1, Limestone = 2, Coal = 6.
+    """Determine the mechanical stratigraphy lithology for a single Gamma Ray sample.
 
     Args:
         gamma_ray (float): Gamma Ray reading. Unit: [gAPI]
         gr_threshold (float): Gamma Ray cutoff separating clean (sand) from shale.
-            Readings at or above this value are shale. Unit: [gAPI]. Default: 75.0
-        coal_flag (bool): When True the interval is classified as coal, overriding
-            the Gamma Ray classification. Default: False
-        limestone_flag (bool): When True the interval is classified as limestone,
-            overriding the Gamma Ray classification. Ignored if ``coal_flag`` is
-            True. Default: False
+            Unit: [gAPI]. Default: 75.0
+        coal_flag (bool): Coal flag for this sample. Default: False
+        limestone_flag (bool): Limestone flag for this sample. Default: False
 
     Returns:
         int: Lithology code. Sand = 0, Shale = 1, Limestone = 2, Coal = 6
     """
     if coal_flag:
-        return int(Lithology.COAL)
+        return 6
     if limestone_flag:
-        return int(Lithology.LIMESTONE)
-    if gamma_ray >= gr_threshold:
-        return int(Lithology.SHALE)
-    return int(Lithology.SAND)
+        return 2
+    if gamma_ray > gr_threshold:
+        return 1  # shale
+    return 0  # sand
 
 
 def determine_lithology_array(
@@ -151,20 +125,16 @@ def determine_lithology_array(
         ValueError: If ``coal_flag`` or ``limestone_flag`` is provided with a length
             that does not match ``gamma_ray``.
     """
-    coal = coal_flag if coal_flag is not None else [False] * len(gamma_ray)
-    limestone = limestone_flag if limestone_flag is not None else [False] * len(gamma_ray)
-
-    if len(coal) != len(gamma_ray):
-        raise ValueError("coal_flag must have the same length as gamma_ray")
-    if len(limestone) != len(gamma_ray):
-        raise ValueError("limestone_flag must have the same length as gamma_ray")
-
-    return [
-        determine_lithology(
-            gamma_ray=gr,
-            gr_threshold=gr_threshold,
-            coal_flag=coal_sample,
-            limestone_flag=limestone_sample,
+    n = len(gamma_ray)
+    if coal_flag is None:
+        coal_flag = [False] * n
+    if limestone_flag is None:
+        limestone_flag = [False] * n
+    if len(coal_flag) != n or len(limestone_flag) != n:
+        raise ValueError(
+            "coal_flag and limestone_flag, when provided, must have the same length as gamma_ray"
         )
-        for gr, coal_sample, limestone_sample in zip(gamma_ray, coal, limestone)
+    return [
+        determine_lithology(gr, gr_threshold, c, l)
+        for gr, c, l in zip(gamma_ray, coal_flag, limestone_flag, strict=True)
     ]
