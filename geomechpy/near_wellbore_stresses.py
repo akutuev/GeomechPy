@@ -155,7 +155,7 @@ class NearWellboreStressesCalculation:
                 bitsize (float): Borehole size [in]
 
             Returns:
-                BoreholeGeneralStresses: Dataclass containing the radial, tangential, axial and shear stress components azimutgakky and radially around a borehole. See `BoreholeGeneralStresses` for details. Unit: consistent with input pressure unit
+                BoreholeGeneralStresses: Dataclass containing the radial, tangential, axial and shear stress components azimuthally and radially around a borehole. See `BoreholeGeneralStresses` for details. Unit: consistent with input pressure unit
             """
             stress_tensor_nev = rotate_stress_to_shmax(shmin, shmax, svert, shmax_azimuth)
             stress_toh = rotate_nev_to_toh(borehole_deviation, borehole_azimuth, stress_tensor_nev)
@@ -168,13 +168,15 @@ class NearWellboreStressesCalculation:
             sxz0 = stress_toh[2, 0]
 
             theta_rad = theta*(math.pi/180)
+
+            bh_radius = bitsize / 2
             
-            a0 = (bitsize**2)/(radius**2) 
-            a1_p= 1 + bitsize**2/radius**2 
-            a1_m= 1 - bitsize**2/radius**2 
-            a2= 1 + 3*bitsize**4/radius**4 
-            a3m = 1 - 3*bitsize**4/radius**4 + 2*bitsize**2/radius**2
-            a3p = 1 + 3*bitsize**4/radius**4 - 4*bitsize**2/radius**2
+            a0 = (bh_radius**2)/(radius**2) 
+            a1_p= 1 + bh_radius**2/radius**2 
+            a1_m= 1 - bh_radius**2/radius**2 
+            a2= 1 + 3*bh_radius**4/radius**4 
+            a3m = 1 - 3*bh_radius**4/radius**4 + 2*bh_radius**2/radius**2
+            a3p = 1 + 3*bh_radius**4/radius**4 - 4*bh_radius**2/radius**2
 
             sigma_general_rr = 0.5*(sx0 + sy0) *a1_m + 0.5*(sx0 - sy0)*a3p*np.cos(2*theta_rad) + sxy0*a3p*np.sin(2*theta_rad) + (mud_pressure - pore_pressure)*a0 
             sigma_general_tt  = 0.5*(sx0 + sy0)*a1_p - 0.5*(sx0 - sy0)*a2*np.cos(2*theta_rad) - sxy0*a2*np.sin(2*theta_rad) - (mud_pressure - pore_pressure)*a0     
