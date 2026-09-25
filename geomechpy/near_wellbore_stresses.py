@@ -136,56 +136,56 @@ class NearWellboreStressesCalculation:
         borehole_azimuth: float,
         bitsize: float,
     ) -> BoreholeGeneralStresses:
-            """Compute the near wellbore stresses around a wellbore at any azimuthal or radial position for a single depth for any borehole orientation using the Kirsch solution.
+        """Compute the near wellbore stresses around a wellbore at any azimuthal or radial position for a single depth for any borehole orientation using the Kirsch solution.
 
-            Reference: Fjaer, Erling, et al. Petroleum related rock mechanics. Vol. 53. Elsevier, 2008; Chapter 4 eq. 4.83 - 4.92.
+        Reference: Fjaer, Erling, et al. Petroleum related rock mechanics. Vol. 53. Elsevier, 2008; Chapter 4 eq. 4.83 - 4.92.
 
-            Args:
-                shmin (float): Minimum horizontal stress magnitude. Unit: Pressure Unit [psi]
-                shmax (float): Maximum horizontal stress magnitude. Unit: Pressure Unit [psi]
-                svert (float): Vertical stress magnitude. Unit: Pressure Unit [psi]
-                pore_pressure (float): Pore pressure. Unit: Pressure Unit [psi]
-                shmax_azimuth (float): Direction of the maximum horizontal stress magnitude relative to Geographic NORTH. Unit: [deg]
-                mud_pressure (float): Mud pressure inside the borehole. Unit: Pressure Unit [psi]
-                theta (npt.NDArray[np.float64]): Azimuthal angles around the borehole circumference measured relative to top of hole (TOH). Unit: [deg]
-                radius (npt.NDArray[np.float64]): Radial position measured from the borehole wall. Unit: [in]
-                poisson_ratio_static (float): Static Poisson's ratio. Unit: unitless
-                borehole_deviation (float): Borehole inclination. Unit: [deg]
-                borehole_azimuth (float): Borehole azimuth. Unit: [deg]
-                bitsize (float): Borehole size [in]
+        Args:
+            shmin (float): Minimum horizontal stress magnitude. Unit: Pressure Unit [psi]
+            shmax (float): Maximum horizontal stress magnitude. Unit: Pressure Unit [psi]
+            svert (float): Vertical stress magnitude. Unit: Pressure Unit [psi]
+            pore_pressure (float): Pore pressure. Unit: Pressure Unit [psi]
+            shmax_azimuth (float): Direction of the maximum horizontal stress magnitude relative to Geographic NORTH. Unit: [deg]
+            mud_pressure (float): Mud pressure inside the borehole. Unit: Pressure Unit [psi]
+            theta (npt.NDArray[np.float64]): Azimuthal angles around the borehole circumference measured relative to top of hole (TOH). Unit: [deg]
+            radius (npt.NDArray[np.float64]): Radial distance from the borehole centre. Unit: [in]
+            poisson_ratio_static (float): Static Poisson's ratio. Unit: unitless
+            borehole_deviation (float): Borehole inclination. Unit: [deg]
+            borehole_azimuth (float): Borehole azimuth. Unit: [deg]
+            bitsize (float): Borehole size [in]
 
-            Returns:
-                BoreholeGeneralStresses: Dataclass containing the radial, tangential, axial and shear stress components azimuthally and radially around a borehole. See `BoreholeGeneralStresses` for details. Unit: consistent with input pressure unit
-            """
-            stress_tensor_nev = rotate_stress_to_shmax(shmin, shmax, svert, shmax_azimuth)
-            stress_toh = rotate_nev_to_toh(borehole_deviation, borehole_azimuth, stress_tensor_nev)
+        Returns:
+            BoreholeGeneralStresses: Dataclass containing the radial, tangential, axial and shear stress components azimuthally and radially around a borehole. See `BoreholeGeneralStresses` for details. Unit: consistent with input pressure unit
+        """
+        stress_tensor_nev = rotate_stress_to_shmax(shmin, shmax, svert, shmax_azimuth)
+        stress_toh = rotate_nev_to_toh(borehole_deviation, borehole_azimuth, stress_tensor_nev)
 
-            sx0 = stress_toh[0, 0]
-            sy0 = stress_toh[1, 1]
-            sz0 = stress_toh[2, 2]
-            sxy0 = stress_toh[1, 0]
-            syz0 = stress_toh[2, 1]
-            sxz0 = stress_toh[2, 0]
+        sx0 = stress_toh[0, 0]
+        sy0 = stress_toh[1, 1]
+        sz0 = stress_toh[2, 2]
+        sxy0 = stress_toh[1, 0]
+        syz0 = stress_toh[2, 1]
+        sxz0 = stress_toh[2, 0]
 
-            theta_rad = theta*(math.pi/180)
+        theta_rad = np.deg2rad(theta)
 
-            bh_radius = bitsize / 2
-            
-            a0 = (bh_radius**2)/(radius**2) 
-            a1_p= 1 + bh_radius**2/radius**2 
-            a1_m= 1 - bh_radius**2/radius**2 
-            a2= 1 + 3*bh_radius**4/radius**4 
-            a3m = 1 - 3*bh_radius**4/radius**4 + 2*bh_radius**2/radius**2
-            a3p = 1 + 3*bh_radius**4/radius**4 - 4*bh_radius**2/radius**2
+        bh_radius = bitsize / 2
 
-            sigma_general_rr = 0.5*(sx0 + sy0) *a1_m + 0.5*(sx0 - sy0)*a3p*np.cos(2*theta_rad) + sxy0*a3p*np.sin(2*theta_rad) + (mud_pressure - pore_pressure)*a0 
-            sigma_general_tt  = 0.5*(sx0 + sy0)*a1_p - 0.5*(sx0 - sy0)*a2*np.cos(2*theta_rad) - sxy0*a2*np.sin(2*theta_rad) - (mud_pressure - pore_pressure)*a0     
-            sigma_general_zz = sz0 - poisson_ratio_static*(2*(sx0 - sy0)*a0*np.cos(2*theta_rad) + 4*sxy0*a0*np.sin(2*theta_rad))
-            sigma_general_rt = (-0.5*(sx0 - sy0)*(a3m)*np.sin(2*theta_rad)) + sxy0*(a3m)*np.cos(2*theta_rad)
-            sigma_general_tz = (-sxz0*np.sin(theta_rad) + syz0*np.cos(theta_rad))*a1_p
-            sigma_general_rz = ( sxz0*np.cos(theta_rad) + syz0*np.sin(theta_rad))*a1_m
+        a0 = (bh_radius**2) / (radius**2)
+        a1_p = 1 + bh_radius**2 / radius**2
+        a1_m = 1 - bh_radius**2 / radius**2
+        a2 = 1 + 3 * bh_radius**4 / radius**4
+        a3m = 1 - 3 * bh_radius**4 / radius**4 + 2 * bh_radius**2 / radius**2
+        a3p = 1 + 3 * bh_radius**4 / radius**4 - 4 * bh_radius**2 / radius**2
 
-            return BoreholeWallStresses(sigma_general_rr, sigma_general_tt, sigma_general_zz, sigma_general_tz, sigma_general_rt, sigma_general_rz)
+        sigma_general_rr = 0.5 * (sx0 + sy0) * a1_m + 0.5 * (sx0 - sy0) * a3p * np.cos(2 * theta_rad) + sxy0 * a3p * np.sin(2 * theta_rad) + (mud_pressure - pore_pressure) * a0
+        sigma_general_tt = 0.5 * (sx0 + sy0) * a1_p - 0.5 * (sx0 - sy0) * a2 * np.cos(2 * theta_rad) - sxy0 * a2 * np.sin(2 * theta_rad) - (mud_pressure - pore_pressure) * a0
+        sigma_general_zz = sz0 - poisson_ratio_static * (2 * (sx0 - sy0) * a0 * np.cos(2 * theta_rad) + 4 * sxy0 * a0 * np.sin(2 * theta_rad))
+        sigma_general_rt = (-0.5 * (sx0 - sy0) * a3m * np.sin(2 * theta_rad)) + sxy0 * a3m * np.cos(2 * theta_rad)
+        sigma_general_tz = (-sxz0 * np.sin(theta_rad) + syz0 * np.cos(theta_rad)) * a1_p
+        sigma_general_rz = (sxz0 * np.cos(theta_rad) + syz0 * np.sin(theta_rad)) * a1_m
+
+        return BoreholeGeneralStresses(sigma_general_rr, sigma_general_tt, sigma_general_zz, sigma_general_tz, sigma_general_rt, sigma_general_rz)
 
     @staticmethod
     def calculate_principal_stresses_analytical_boreholewall(
