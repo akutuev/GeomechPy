@@ -24,7 +24,7 @@ build-backend = "hatchling.build"
 [tool.bumpversion]
 current_version = "0.0.3"
 commit = true
-tag = false
+tag = true
 tag_name = "v{new_version}"
 
 [[tool.bumpversion.files]]
