@@ -1,6 +1,6 @@
 [project]
 name = "geomechpy"
-version = "0.0.4"
+version = "0.0.5"
 license = "LGPL-3.0-only"
 description = "The geomechpy Python library aims to provide a comprehensive set of functions to build a Geomechanics workflow"
 authors = [
@@ -22,7 +22,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.bumpversion]
-current_version = "0.0.4"
+current_version = "0.0.5"
 commit = true
 tag = true
 tag_name = "v{new_version}"
