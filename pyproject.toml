@@ -4,8 +4,11 @@ version = "0.0.5"
 license = "LGPL-3.0-only"
 description = "The geomechpy Python library aims to provide a comprehensive set of functions to build a Geomechanics workflow"
 authors = [
-    {name = "Alex Kutuev", email = "kutuev93@yandex.ru"},
+    {name = "Alex Kutuev"},
     {name = "Florian Karpfinger"}
+]
+maintainers = [
+    {name = "Alex Kutuev", email = "kutuev93@yandex.ru"}
 ]
 classifiers = [
     "License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)",
