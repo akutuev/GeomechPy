@@ -32,14 +32,7 @@ def determine_lithology(
     coal_flag: bool = False,
     limestone_flag: bool = False,
 ) -> int:
-    """Determine the mechanical stratigraphy lithology from a Gamma Ray reading.
-
-    The Gamma Ray log is used to discriminate shale from non-shale rock: a reading
-    at or above the threshold is classified as shale, otherwise the interval is
-    treated as clean (sandstone). Coal and limestone are not resolvable from Gamma
-    Ray alone, so they are supplied as external flags that override the Gamma Ray
-    classification. The coal flag takes precedence over the limestone flag.
-
+    """
     The returned integer follows the mechanical stratigraphy convention encoded in
     :class:`Lithology`: Sand = 0, Shale = 1, Limestone = 2, Coal = 6.
 
