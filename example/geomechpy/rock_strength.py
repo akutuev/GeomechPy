@@ -1,0 +1,230 @@
+import math
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class RockStrengthPropertiesConverter:
+    """Compute rock strength properties from sonic slownesses, dynamic or static elastic properties
+       Rock strength properties are:
+         - Unconfined compressive Strength (UCS)
+         - Tensile Strength (TSTR)
+         - Friction Angle (FANG)
+
+    Reference:
+       Zhang, Yuliang, et al. "Extracting static elastic moduli of rock through elastic wave velocities." Acta Geophysica 72.2 (2024): 915-931.
+    """
+
+    @staticmethod
+    def convert_yme_sta_to_ucs_plumb(yme_sta: float) -> float:
+        """
+        Convert static Young's modulus to UCS using Plumb Generic correlation
+
+        Equation type: Linear law (y = a*x)
+
+        Applicable for: generic.
+
+        Reference: Plumb, R. A., 1994. Influence of composition and texture on the failure properties of clastic rocks. Eurock 94, Rock Mechanics in Petroleum Engineering conference, Delft, Netherlands, pp. 13-20.
+
+        Args:
+           yme_sta (float): Static Young's modulus magnitude Unit: Mpsi
+
+        Returns:
+           ucs_sta_plumb_generic: Unconfined compressive strength (UCS) from Plumb generic Young's modulus correlation Unit: psi
+        """
+
+        multiplier = 0.210306770614015
+        ucs_plumb_generic = multiplier * yme_sta
+
+        return float(ucs_plumb_generic)
+
+    @staticmethod
+    def convert_dtco_to_ucs_mcnally_sandstone(dtco: float, output_unit: str = "MPa") -> float:
+        """
+        Convert compressional slowness (DTCO) to UCS using the McNally Sandstone correlation
+        Equation type: Exponential decay law (y = a*exp(b*x))
+        Applicable for: sandstone.
+        Reference: McNally, G.H., 1987. Estimation of coal measures rock strength using sonic
+           and neutron logs. Geoexploration, 24(4-5), pp.381-395.
+        Args:
+           dtco (float): Compressional slowness (sonic transit time). Unit: us/ft
+           output_unit (str): Desired output unit for UCS, either 'MPa' (native) or 'psi'.
+               Default: 'MPa'
+        Returns:
+           ucs_mcnally_sandstone: Unconfined compressive strength (UCS) from McNally Sandstone
+               correlation, converted to output_unit. Unit: MPa or psi
+        """
+        ucs_mpa = 1200.0 * math.exp(-0.036 * dtco)
+    
+        unit = output_unit.strip().lower()
+        if unit == "mpa":
+            ucs_mcnally_sandstone = ucs_mpa
+        elif unit == "psi":
+            ucs_mcnally_sandstone = ucs_mpa * 145.037737730209  # 1 MPa = 145.0377... psi
+        else:
+            raise ValueError(f"Unsupported output_unit: {output_unit!r}. Use 'MPa' or 'psi'.")
+    
+        return float(ucs_mcnally_sandstone)
+
+    @staticmethod
+    def convert_ucs_to_tstr(ucs: float, multiplier: float = 0.15) -> float:
+        """
+        Convert UCS to tensile strength using a constant multiploer
+
+        Equation type: Linear law (y = a*x)
+
+        Applicable for: Generic
+
+        Reference: N/A
+        Args:
+           ucs (float): Unconfined Compressive Strength Unit: psi
+           multiplier (float): constant multiplier Default set to 0.15.
+        Returns:
+           tstr (float): Tensile Stength Unit: psi
+        """
+
+        tstr = multiplier * ucs
+
+        return float(tstr)
+
+    @staticmethod
+    def convert_friction_angle_lal(dtco: float) -> float:
+        """
+        Convert compressional slowness to friction angle using Lal correlation
+
+        Equation type: trigonometric correlation
+
+        Applicable for: Shale
+
+        Reference: Lal, M., 1999. Shale stability: drilling fluid interaction and shale strength. SPE Latin American and Caribbean Petroleum Engineering Conference held in Caracas, Venezuela.
+
+        Args:
+           dtco (float): Compressional Slowness Unit: us/ft
+
+        Returns:
+          fang_lal (float): Friction angle from Lal correlation Unit: dega
+        """
+
+        fang_lal = (180 / 3.141592) * math.asin((304800 - 1000 * dtco) / (304800 + 1000 * dtco))
+
+        return float(fang_lal)
+
+    @staticmethod
+    def convert_yme_sta_to_ucs_plumb_array(yme_sta: list[float]) -> list[float]:
+        """
+        Convert an array of static Young's modulus values to UCS using Plumb Generic correlation.
+
+        Args:
+           yme_sta (list[float]): Static Young's modulus values Unit: Mpsi
+
+        Returns:
+           ucs_sta_plumb_generic (list[float]): UCS values from Plumb generic Young's modulus correlation Unit: psi
+        """
+        return [
+            RockStrengthPropertiesConverter.convert_yme_sta_to_ucs_plumb(yme_sta=value)
+            for value in yme_sta
+        ]
+
+    @staticmethod
+    def convert_ucs_to_tstr_array(ucs: list[float], multiplier: float = 0.15) -> list[float]:
+        """
+        Convert an array of UCS values to tensile strength using a constant multiplier.
+
+        Args:
+           ucs (list[float]): Unconfined Compressive Strength values Unit: psi
+           multiplier (float): constant multiplier Default set to 0.15.
+
+        Returns:
+           tstr (list[float]): Tensile Strength values Unit: psi
+        """
+        return [
+            RockStrengthPropertiesConverter.convert_ucs_to_tstr(ucs=value, multiplier=multiplier)
+            for value in ucs
+        ]
+
+    @staticmethod
+    def convert_dtco_to_ucs_mcnally_sandstone_array(
+        dtco: list[float], output_unit: str = "MPa"
+    ) -> list[float]:
+        """
+        Convert an array of compressional slowness (DTCO) values to UCS using the
+        McNally Sandstone correlation.
+        Args:
+           dtco (list[float]): Compressional slowness values Unit: us/ft
+           output_unit (str): Desired output unit for UCS, either 'MPa' (native) or 'psi'.
+               Default: 'MPa'
+        Returns:
+           ucs_mcnally_sandstone (list[float]): UCS values from McNally Sandstone
+               correlation, converted to output_unit. Unit: MPa or psi
+        """
+        return [
+            RockStrengthPropertiesConverter.convert_dtco_to_ucs_mcnally_sandstone(
+                dtco=value, output_unit=output_unit
+            )
+            for value in dtco
+        ]
+    
+    @staticmethod
+    def convert_friction_angle_lal_array(dtco: list[float]) -> list[float]:
+        """
+        Convert an array of compressional slowness values to friction angles using Lal correlation.
+
+        Args:
+           dtco (list[float]): Compressional Slowness values Unit: us/ft
+
+        Returns:
+          fang_lal (list[float]): Friction angle values from Lal correlation Unit: dega
+        """
+        return [
+            RockStrengthPropertiesConverter.convert_friction_angle_lal(dtco=value)
+            for value in dtco
+        ]
+
+    @staticmethod
+    def convert_gr_to_fang_custom_linear(
+        gr: float, gr_min: float, gr_max: float
+    ) -> float:
+        """
+        Convert gamma ray (GR) to friction angle (FANG) using a custom linear correlation.
+        Equation type: Linear law (y = a - b*x), interpolated between clean sand and shale endpoints.
+        Applicable for: custom/generic, calibrated per-well or per-field via GR_min/GR_max.
+        Reference: Custom correlation — linear proportion to gamma ray.
+           FANG = 45 - 30 * (GR - GR_min) / (GR_max - GR_min)
+           Clean sand (low GR) -> 45 deg, Shale (high GR) -> 15 deg.
+        Args:
+           gr (float): Gamma ray reading at depth. Unit: API (or gAPI)
+           gr_min (float): Gamma ray cutoff for clean sand (0% shale). Unit: API
+           gr_max (float): Gamma ray cutoff for pure shale (100% shale). Unit: API
+        Returns:
+           fang_custom_linear: Friction angle (FANG) from custom GR-linear correlation. Unit: degrees
+        """
+        if gr_max == gr_min:
+            raise ValueError("gr_max must not equal gr_min (division by zero).")
+
+        fang_custom_linear = 45.0 - 30.0 * (gr - gr_min) / (gr_max - gr_min)
+
+        # Clamp to the correlation's defined endpoints (15-45 deg) — GR readings outside
+        # [gr_min, gr_max] otherwise extrapolate past the physically intended sand/shale bounds.
+        fang_custom_linear = max(15.0, min(45.0, fang_custom_linear))
+
+        return float(fang_custom_linear)
+
+    @staticmethod
+    def convert_gr_to_fang_custom_linear_array(
+        gr: list[float], gr_min: float, gr_max: float
+    ) -> list[float]:
+        """
+        Convert an array of gamma ray (GR) values to friction angle (FANG) using a custom
+        linear correlation.
+        Args:
+           gr (list[float]): Gamma ray readings. Unit: API (or gAPI)
+           gr_min (float): Gamma ray cutoff for clean sand (0% shale). Unit: API
+           gr_max (float): Gamma ray cutoff for pure shale (100% shale). Unit: API
+        Returns:
+           fang_custom_linear (list[float]): FANG values from custom GR-linear correlation. Unit: degrees
+        """
+        return [
+            RockStrengthPropertiesConverter.convert_gr_to_fang_custom_linear(
+                gr=value, gr_min=gr_min, gr_max=gr_max
+            )
+            for value in gr
+        ]
