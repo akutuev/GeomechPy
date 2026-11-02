@@ -106,6 +106,13 @@ Before writing new code, scan an existing module to align with its patterns:
 - `geomechpy/overburden_stress.py` — calculation class example
 - `geomechpy/pore_pressure.py` — additional reference
 
+## Git & Version Control
+
+- **Never push code automatically.** After completing code changes, always stop and let the user decide when and whether to push to the remote.
+- Inform the user that the changes are ready and suggest they push when they are satisfied — for example: *"The changes are ready. Run `git push` when you'd like to publish them."*
+- Only run `git push` (or any push-equivalent command) if the user **explicitly** requests it in their message (e.g. "push it", "go ahead and push", "push to remote").
+- Committing locally is acceptable when the user asks to commit, but never follow a commit immediately with a push unless explicitly told to do so.
+
 ## Checklist Before Submitting Code
 
 - [ ] All variable names are fully descriptive (no single-letter or abbreviated temporaries)
