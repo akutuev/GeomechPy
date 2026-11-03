@@ -12,7 +12,7 @@ class UnitConverter:
 
     Reference: N/A
     """
-    # Core constants relative to a 1.0 SG (Fresh Water Baseline)
+    # Conversion factors relative to 1.0 SG (Fresh Water Baseline)
     # Density / Gradient values divided by these factors = SG
     SG_CONVERSION_FACTORS = {
         'sg': 1.0,
@@ -27,6 +27,7 @@ class UnitConverter:
         'bar/m': 0.0980665,
         'kpa/m': 9.80665
     }
+
     # Conversion factors relative to 1.0 Pascal 
     # Value multiplied by this factor = Pascal value
     PA_CONVERSION_FACTORS = {
@@ -42,7 +43,8 @@ class UnitConverter:
             'torr': 133.322368421,
             'mmhg': 133.322387415,
             'inhg': 3386.389
-        }   
+    }  
+     
     # Conversion factors relative to 1.0 Meter (m Baseline)
     # Value multiplied by this factor = Meter value
     METER_CONVERSION_FACTORS = {
@@ -62,26 +64,28 @@ class UnitConverter:
             'yard': 0.9144,
             'mi': 1609.344,
             'mile': 1609.344
-        }    
+    }    
 
-    # Velocity scaling map to m/s baseline
+    # Conversion factors relative to 1.0 m/s 
+    # Value multiplied by this factor = m/s value
     METER_PER_SECOND_CONVERSION_FACTORS = {
-        'ms': 1.0,
-        'fts': 0.3048,
-        'ftsec': 0.3048,
-        'kmh': 1.0 / 3.6,
+        'm/s': 1.0,
+        'ft/s': 0.3048,
+        'ft/sec': 0.3048,
+        'km/h': 1.0 / 3.6,
         'mph': 0.44704,
-        'kfts': 304.8
+        'kft/s': 304.8
     }
 
-    # Slowness scaling map to s/m baseline
+    # Conversion factors relative to 1.0 s/m 
+    # Value multiplied by this factor = s/m value
     SECONDS_PER_METER_CONVERSION_FACTORS = {
-        'sm': 1.0,
-        'sft': 3.280839895,
-        'usm': 1e-6,
-        'usmeter': 1e-6,
-        'usft': 3.280839895e-6,
-        'usfoot': 3.280839895e-6
+        's/m': 1.0,
+        's/ft': 3.280839895,
+        'us/m': 1e-6,
+        'us/meter': 1e-6,
+        'us/ft': 3.280839895e-6,
+        'us/foot': 3.280839895e-6
     }
     GRAVITY = 0.00980665  # 1 SG fluid down 1 meter TVD exerts 0.00980665 MPa
     FIELD_UNITS = {'ppg', 'lb/gal', 'pcf', 'lb/ft3', 'psi/ft', 'psi'}
