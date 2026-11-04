@@ -14,6 +14,7 @@ class UnitConverter:
     """
     # Conversion factors relative to 1.0 SG (Fresh Water Baseline)
     # Density / Gradient values divided by these factors = SG
+    #
     SG_CONVERSION_FACTORS = {
         'sg': 1.0,
         'g/cm3': 1.0,
@@ -30,6 +31,7 @@ class UnitConverter:
 
     # Conversion factors relative to 1.0 Pascal 
     # Value multiplied by this factor = Pascal value
+    #https://www.nist.gov/pml/owm/metric-si/unit-conversion/pressure-and-gas-flow-unit-conversions
     PA_CONVERSION_FACTORS = {
             'pa': 1.0,
             'kpa': 1000.0,
@@ -47,6 +49,7 @@ class UnitConverter:
      
     # Conversion factors relative to 1.0 Meter (m Baseline)
     # Value multiplied by this factor = Meter value
+    # https://www.isa.org/getmedia/5be3daca-5c44-4d9e-bf1c-a4aa55cfb759/CCST-Conversions-document.pdf (Table 2)
     METER_CONVERSION_FACTORS = {
             'm': 1.0,
             'meter': 1.0,
@@ -68,6 +71,7 @@ class UnitConverter:
 
     # Conversion factors relative to 1.0 m/s 
     # Value multiplied by this factor = m/s value
+    # https://www.isa.org/getmedia/5be3daca-5c44-4d9e-bf1c-a4aa55cfb759/CCST-Conversions-document.pdf (Table 12)
     METER_PER_SECOND_CONVERSION_FACTORS = {
         'm/s': 1.0,
         'ft/s': 0.3048,
@@ -87,7 +91,7 @@ class UnitConverter:
         'us/ft': 3.280839895e-6,
         'us/foot': 3.280839895e-6
     }
-    GRAVITY = 0.00980665  # 1 SG fluid down 1 meter TVD exerts 0.00980665 MPa
+    GRAVITY = 9806.65  # 1 SG fluid down 1 meter TVD exerts 9806.65 Pa
     FIELD_UNITS = {'ppg', 'lb/gal', 'pcf', 'lb/ft3', 'psi/ft', 'psi'}
 
     @staticmethod
@@ -154,7 +158,7 @@ class UnitConverter:
         Applicable for: All standard pressure unit pairs used in petroleum engineering
         and geomechanics.
 
-        Reference: N/A
+        Reference: https://www.nist.gov/pml/owm/metric-si/unit-conversion/pressure-and-gas-flow-unit-conversions
 
         Supported units: 'pa', 'kpa', 'mpa', 'gpa', 'psi', 'mpsi', 'bar', 'mbar',
                          'atm', 'torr', 'mmhg', 'inhg'
@@ -211,7 +215,7 @@ class UnitConverter:
         Applicable for: All standard length unit pairs used in petroleum engineering
         and geomechanics.
 
-        Reference: N/A
+        Reference:     # https://www.isa.org/getmedia/5be3daca-5c44-4d9e-bf1c-a4aa55cfb759/CCST-Conversions-document.pdf (Table 2)
 
         Supported units: 'm', 'meter', 'meters', 'mm', 'cm', 'km', 'in', 'inch', 'inches',
                          'ft', 'foot', 'feet', 'yd', 'yard', 'mi', 'mile'
@@ -390,7 +394,7 @@ class UnitConverter:
             raise ValueError(f"Unsupported input pressure unit: '{unit_in}'")
 
         # 3. Calculate baseline Specific Gravity (SG)
-        sg_value = pa_pressure * UnitConverter.convert_pressure('mpa') / (UnitConverter.GRAVITY * tvd_m)
+        sg_value = pa_pressure / (UnitConverter.GRAVITY * tvd_m)
 
         # 4. Scale baseline SG out to the target density/gradient unit
         converted_equivalent_mud_weight =sg_value * UnitConverter.SG_CONVERSION_FACTORS[unit_out]
@@ -418,7 +422,7 @@ class UnitConverter:
         sg_value = mw_value / UnitConverter.SG_CONVERSION_FACTORS[unit_in]
 
         # 3. Compute absolute baseline hydrostatic pressure in Pa
-        target_pa = sg_value * UnitConverter.GRAVITY * tvd_m * UnitConverter.convert_pressure('mpa')
+        target_pa = sg_value * UnitConverter.GRAVITY * tvd_m 
 
         # 4. Convert baseline pa pressure to the desired output pressure scale
         if unit_out == 'pa':
