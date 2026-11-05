@@ -5,75 +5,58 @@ TOLERANCE = 1e-6
 
 class TestConvertEquivalentMudWeight:
     def test_ppg_to_sg_fresh_water(self) -> None:
-        # 8.345404 ppg / 8.345404 (ppg/SG) * 1.0 = 1.0 SG
         result = UnitConverter.convert_equivalent_mud_weight(8.345404, 'ppg', 'sg')
         assert result == pytest.approx(1.0, rel=TOLERANCE)
 
     def test_sg_to_kg_per_m3_fresh_water(self) -> None:
-        # 1.0 SG / 1.0 * 1000.0 (kg/m3 per SG) = 1000.0 kg/m3
         result = UnitConverter.convert_equivalent_mud_weight(1.0, 'sg', 'kg/m3')
         assert result == pytest.approx(1000.0, rel=TOLERANCE)
 
     def test_sg_to_ppg_drilling_mud(self) -> None:
-        # 1.2 SG / 1.0 * 8.345404 (ppg/SG) = 10.014485 ppg
         result = UnitConverter.convert_equivalent_mud_weight(1.2, 'sg', 'ppg')
         expected = 1.2 * 8.345404
         assert result == pytest.approx(expected, rel=TOLERANCE)
 
     def test_kg_per_m3_to_ppg_seawater(self) -> None:
-        # 1025 kg/m3 / 1000 (kg/m3 per SG) * 8.345404 (ppg/SG) = 8.55403910 ppg
         result = UnitConverter.convert_equivalent_mud_weight(1025.0, 'kg/m3', 'ppg')
         expected = (1025.0 / 1000.0) * 8.345404
         assert result == pytest.approx(expected, rel=TOLERANCE)
 
     def test_g_per_cm3_to_lb_per_ft3_fresh_water(self) -> None:
-        # 1.0 g/cm3 / 1.0 * 62.42796 (lb/ft3 per SG) = 62.42796 lb/ft3
         result = UnitConverter.convert_equivalent_mud_weight(1.0, 'g/cm3', 'lb/ft3')
         assert result == pytest.approx(62.42796, rel=TOLERANCE)
 
     def test_psi_per_ft_to_sg_fresh_water_gradient(self) -> None:
-        # 0.433515 psi/ft is the hydrostatic gradient of fresh water (1.0 SG)
         result = UnitConverter.convert_equivalent_mud_weight(0.433515, 'psi/ft', 'sg')
         assert result == pytest.approx(1.0, rel=TOLERANCE)
 
     def test_pcf_to_kg_per_m3(self) -> None:
-        # 65.0 pcf / 62.42796 (pcf/SG) * 1000 (kg/m3 per SG)
         result = UnitConverter.convert_equivalent_mud_weight(65.0, 'pcf', 'kg/m3')
         expected = (65.0 / 62.42796) * 1000.0
         assert result == pytest.approx(expected, rel=TOLERANCE)
 
     def test_lb_gal_alias_is_identical_to_ppg(self) -> None:
-        # 'lb/gal' and 'ppg' share factor 8.345404; converting between them is identity
         result = UnitConverter.convert_equivalent_mud_weight(10.0, 'lb/gal', 'ppg')
         assert result == pytest.approx(10.0, rel=TOLERANCE)
 
     def test_pcf_alias_is_identical_to_lb_per_ft3(self) -> None:
-        # 'pcf' and 'lb/ft3' share factor 62.42796; converting between them is identity
         result = UnitConverter.convert_equivalent_mud_weight(65.0, 'pcf', 'lb/ft3')
         assert result == pytest.approx(65.0, rel=TOLERANCE)
 
-    # --- New gradient units (mpa/m, kpa/m, bar/m) ---
 
     def test_sg_to_mpa_per_m_fresh_water(self) -> None:
-        # 1.0 SG * 0.00980665 (MPa/m per SG) = 0.00980665 MPa/m
-        # This equals GRAVITY / 1e6 = 9806.65 / 1e6 exactly.
         result = UnitConverter.convert_equivalent_mud_weight(1.0, 'sg', 'mpa/m')
         assert result == pytest.approx(0.00980665, rel=TOLERANCE)
 
     def test_sg_to_kpa_per_m_fresh_water(self) -> None:
-        # 1.0 SG * 9.80665 (kPa/m per SG) = 9.80665 kPa/m
-        # This equals GRAVITY / 1e3 exactly.
         result = UnitConverter.convert_equivalent_mud_weight(1.0, 'sg', 'kpa/m')
         assert result == pytest.approx(9.80665, rel=TOLERANCE)
 
     def test_sg_to_bar_per_m_fresh_water(self) -> None:
-        # 1.0 SG * 0.0980665 (bar/m per SG) = 0.0980665 bar/m
-        # This equals GRAVITY / 1e5 exactly.
         result = UnitConverter.convert_equivalent_mud_weight(1.0, 'sg', 'bar/m')
         assert result == pytest.approx(0.0980665, rel=TOLERANCE)
 
     def test_mpa_per_m_to_kpa_per_m(self) -> None:
-        # 0.00980665 MPa/m → SG = 0.00980665/0.00980665 = 1.0 → kPa/m = 1.0 * 9.80665 = 9.80665
         result = UnitConverter.convert_equivalent_mud_weight(0.00980665, 'mpa/m', 'kpa/m')
         assert result == pytest.approx(9.80665, rel=TOLERANCE)
 
@@ -102,7 +85,6 @@ class TestConvertEquivalentMudWeightArray:
     """Array variant of equivalent mud weight conversions."""
 
     def test_each_element_matches_independent_scalar_result(self) -> None:
-        # 8.345404 ppg = 1.0 SG; 16.690808 ppg = 2.0 SG (both exact by definition)
         result = UnitConverter.convert_equivalent_mud_weight_array([8.345404, 16.690808], 'ppg', 'sg')
         assert result[0] == pytest.approx(1.0, rel=TOLERANCE)
         assert result[1] == pytest.approx(2.0, rel=TOLERANCE)
@@ -117,50 +99,41 @@ class TestConvertEquivalentMudWeightArray:
 
 class TestConvertPressure:
     def test_mpa_to_psi(self) -> None:
-        # 1 MPa * 1e6 Pa/MPa / 6894.757293168 Pa/psi = 145.03773773 psi
         result = UnitConverter.convert_pressure(1.0, 'mpa', 'psi')
         expected = 1_000_000.0 / 6894.757293168
         assert result == pytest.approx(expected, rel=TOLERANCE)
 
     def test_kpa_to_bar(self) -> None:
-        # 1000 kPa * 1000 Pa/kPa / 100000 Pa/bar = 10.0 bar (exact)
         result = UnitConverter.convert_pressure(1000.0, 'kpa', 'bar')
         assert result == pytest.approx(10.0, rel=TOLERANCE)
 
     def test_atm_to_pa(self) -> None:
-        # 1 atm * 101325 Pa/atm = 101325 Pa (exact by ISO 31-4)
         result = UnitConverter.convert_pressure(1.0, 'atm', 'pa')
         assert result == pytest.approx(101325.0, rel=TOLERANCE)
 
     def test_psi_to_pa(self) -> None:
-        # 1 psi * 6894.757293168 Pa/psi = 6894.757293168 Pa (NIST definition)
         result = UnitConverter.convert_pressure(1.0, 'psi', 'pa')
         assert result == pytest.approx(6894.757293168, rel=TOLERANCE)
 
     def test_760_mmhg_to_kpa_standard_atmosphere(self) -> None:
-        # 760 mmHg * 133.322387415 Pa/mmHg / 1000 Pa/kPa = 101.325014 kPa
         result = UnitConverter.convert_pressure(760.0, 'mmhg', 'kpa')
         expected = (760.0 * 133.322387415) / 1000.0
         assert result == pytest.approx(expected, rel=TOLERANCE)
 
     def test_bar_to_mbar(self) -> None:
-        # 1 bar * 100000 Pa/bar / 100 Pa/mbar = 1000.0 mbar (exact)
         result = UnitConverter.convert_pressure(1.0, 'bar', 'mbar')
         assert result == pytest.approx(1000.0, rel=TOLERANCE)
 
     def test_gpa_to_mpa(self) -> None:
-        # 1 GPa * 1e9 Pa/GPa / 1e6 Pa/MPa = 1000.0 MPa (exact)
         result = UnitConverter.convert_pressure(1.0, 'gpa', 'mpa')
         assert result == pytest.approx(1000.0, rel=TOLERANCE)
 
     def test_atm_to_psi(self) -> None:
-        # 1 atm = 101325 Pa / 6894.757293168 Pa/psi = 14.69594878 psi
         result = UnitConverter.convert_pressure(1.0, 'atm', 'psi')
         expected = 101325.0 / 6894.757293168
         assert result == pytest.approx(expected, rel=TOLERANCE)
 
     def test_atm_to_inhg_standard_atmosphere(self) -> None:
-        # 1 atm = 101325 Pa / 3386.389 Pa/inHg = 29.92125240 inHg
         result = UnitConverter.convert_pressure(1.0, 'atm', 'inhg')
         expected = 101325.0 / 3386.389
         assert result == pytest.approx(expected, rel=TOLERANCE)
@@ -190,7 +163,6 @@ class TestConvertPressureArray:
     """Array variant of pressure conversions."""
 
     def test_each_element_matches_independent_scalar_result(self) -> None:
-        # 1 MPa = 1e6/6894.757293168 psi; 2 MPa = twice that value
         result = UnitConverter.convert_pressure_array([1.0, 2.0], 'mpa', 'psi')
         expected_one_mpa_in_psi = 1_000_000.0 / 6894.757293168
         assert result[0] == pytest.approx(expected_one_mpa_in_psi, rel=TOLERANCE)
@@ -210,17 +182,14 @@ class TestConvertLength:
         assert result == pytest.approx(0.3048, rel=TOLERANCE)
 
     def test_ft_to_inches(self) -> None:
-        # 1 ft * 0.3048 / 0.0254 = 12.0 in (exact)
         result = UnitConverter.convert_length(1.0, 'ft', 'in')
         assert result == pytest.approx(12.0, rel=TOLERANCE)
 
     def test_one_mile_to_feet(self) -> None:
-        # 1 mi * 1609.344 / 0.3048 = 5280.0 ft (exact)
         result = UnitConverter.convert_length(1.0, 'mi', 'ft')
         assert result == pytest.approx(5280.0, rel=TOLERANCE)
 
     def test_one_yard_to_feet(self) -> None:
-        # 1 yd * 0.9144 / 0.3048 = 3.0 ft (exact)
         result = UnitConverter.convert_length(1.0, 'yd', 'ft')
         assert result == pytest.approx(3.0, rel=TOLERANCE)
 
@@ -233,13 +202,11 @@ class TestConvertLength:
         assert result == pytest.approx(1.0, rel=TOLERANCE)
 
     def test_km_to_miles(self) -> None:
-        # 1 km * 1000 / 1609.344 = 0.62137119 mi
         result = UnitConverter.convert_length(1.0, 'km', 'mi')
         expected = 1000.0 / 1609.344
         assert result == pytest.approx(expected, rel=TOLERANCE)
 
     def test_m_to_inches(self) -> None:
-        # 1 m / 0.0254 = 39.37007874 in
         result = UnitConverter.convert_length(1.0, 'm', 'in')
         expected = 1.0 / 0.0254
         assert result == pytest.approx(expected, rel=TOLERANCE)
@@ -288,36 +255,30 @@ class TestConvertLengthArray:
 
 class TestConvertAcousticVelocityToVelocity:
     def test_m_per_s_to_ft_per_s(self) -> None:
-        # 1000 m/s / 0.3048 = 3280.8399 ft/s
         result = UnitConverter.convert_acoustic(1000.0, 'm/s', 'ft/s')
         expected = 1000.0 / 0.3048
         assert result == pytest.approx(expected, rel=TOLERANCE)
 
     def test_mph_to_m_per_s(self) -> None:
-        # 60 mph * 0.44704 = 26.8224 m/s (exact SI conversion)
         result = UnitConverter.convert_acoustic(60.0, 'mph', 'm/s')
         assert result == pytest.approx(26.8224, rel=TOLERANCE)
 
     def test_kft_per_s_to_ft_per_s(self) -> None:
-        # 1 kft/s * 304.8 / 0.3048 = 1000.0 ft/s (exact)
         result = UnitConverter.convert_acoustic(1.0, 'kft/s', 'ft/s')
         assert result == pytest.approx(1000.0, rel=TOLERANCE)
 
     def test_ft_per_sec_alias_is_identical_to_ft_per_s(self) -> None:
-        # 'ft/sec' and 'ft/s' share factor 0.3048; converting between them is identity
         result = UnitConverter.convert_acoustic(5000.0, 'ft/sec', 'ft/s')
         assert result == pytest.approx(5000.0, rel=TOLERANCE)
 
 
 class TestConvertAcousticSlownessToSlowness:
     def test_us_per_ft_to_us_per_m(self) -> None:
-        # 305 µs/ft * 3.280839895 µs/m per µs/ft = 1000.656168 µs/m
         result = UnitConverter.convert_acoustic(305.0, 'us/ft', 'us/m')
         expected = 305.0 * 3.280839895
         assert result == pytest.approx(expected, rel=TOLERANCE)
 
     def test_us_per_m_to_s_per_m(self) -> None:
-        # 100 µs/m * 1e-6 / 1.0 = 1e-4 s/m
         result = UnitConverter.convert_acoustic(100.0, 'us/m', 's/m')
         assert result == pytest.approx(1e-4, rel=TOLERANCE)
 
@@ -334,33 +295,28 @@ class TestConvertAcousticVelocityToSlowness:
     """Cross-domain: velocity → slowness via s = 1/v."""
 
     def test_m_per_s_to_us_per_ft(self) -> None:
-        # 5000 m/s → s_sm = 1/5000 = 2e-4 s/m → us/ft = 2e-4 / 3.280839895e-6 = 60.96 µs/ft
         result = UnitConverter.convert_acoustic(5000.0, 'm/s', 'us/ft')
         slowness_seconds_per_meter = 1.0 / 5000.0
         expected = slowness_seconds_per_meter / 3.280839895e-6
         assert result == pytest.approx(expected, rel=TOLERANCE)
 
     def test_ft_per_s_to_us_per_ft_round_number(self) -> None:
-        # 2000 ft/s → v_ms = 609.6 m/s → s_sm = 1/609.6 → us/ft = 500.0 (exact)
         result = UnitConverter.convert_acoustic(2000.0, 'ft/s', 'us/ft')
         assert result == pytest.approx(500.0, rel=TOLERANCE)
 
 
 class TestConvertAcousticSlownessToVelocity:
     def test_us_per_ft_to_m_per_s(self) -> None:
-        # 200 µs/ft → s_sm = 200 * 3.280839895e-6 = 6.56168e-4 s/m → v = 1524.0 m/s (exact)
         result = UnitConverter.convert_acoustic(200.0, 'us/ft', 'm/s')
         assert result == pytest.approx(1524.0, rel=TOLERANCE)
 
     def test_us_per_ft_to_ft_per_s_round_number(self) -> None:
-        # 500 µs/ft → v = 1/(500e-6 s/ft) = 2000 ft/s (exact)
         result = UnitConverter.convert_acoustic(500.0, 'us/ft', 'ft/s')
         assert result == pytest.approx(2000.0, rel=TOLERANCE)
 
 
 class TestConvertAcousticEdgeCasesAndErrors:
     def test_velocity_slowness_round_trip(self) -> None:
-        # 70 µs/ft → m/s → µs/ft must recover the original value
         intermediate = UnitConverter.convert_acoustic(70.0, 'us/ft', 'm/s')
         result = UnitConverter.convert_acoustic(intermediate, 'm/s', 'us/ft')
         assert result == pytest.approx(70.0, rel=TOLERANCE)
@@ -387,7 +343,6 @@ class TestConvertAcousticEdgeCasesAndErrors:
 
 class TestConvertAcousticArray:
     def test_each_element_matches_independent_scalar_result(self) -> None:
-        # 1000 m/s = 1000/0.3048 ft/s; 2000 m/s = 2000/0.3048 ft/s
         result = UnitConverter.convert_acoustic_array([1000.0, 2000.0], 'm/s', 'ft/s')
         assert result[0] == pytest.approx(1000.0 / 0.3048, rel=TOLERANCE)
         assert result[1] == pytest.approx(2000.0 / 0.3048, rel=TOLERANCE)
@@ -411,7 +366,6 @@ class TestConvertFromPressureToEquivalentMudWeight:
     """
 
     def test_fresh_water_pa_at_1000m_gives_sg_1(self) -> None:
-        # P = 1 SG * 9806.65 Pa/(SG·m) * 1000 m = 9806650 Pa → SG = 1.0 exactly
         result = UnitConverter.convert_from_pressure_to_equivalent_mud_weight(
             pressure_value=9806650.0,
             tvd=1000.0,
@@ -421,7 +375,6 @@ class TestConvertFromPressureToEquivalentMudWeight:
         assert result == pytest.approx(1.0, rel=TOLERANCE)
 
     def test_fresh_water_mpa_at_1000m_gives_sg_1(self) -> None:
-        # 9806650 Pa = 9.80665 MPa → SG = 1.0 exactly
         result = UnitConverter.convert_from_pressure_to_equivalent_mud_weight(
             pressure_value=9.80665,
             tvd=1000.0,
@@ -431,7 +384,6 @@ class TestConvertFromPressureToEquivalentMudWeight:
         assert result == pytest.approx(1.0, rel=TOLERANCE)
 
     def test_fresh_water_pa_at_1000m_gives_mpa_per_m(self) -> None:
-        # SG = 1.0 → mpa/m = 1.0 * 0.00980665 = 0.00980665 (= GRAVITY/1e6)
         result = UnitConverter.convert_from_pressure_to_equivalent_mud_weight(
             pressure_value=9806650.0,
             tvd=1000.0,
@@ -441,10 +393,6 @@ class TestConvertFromPressureToEquivalentMudWeight:
         assert result == pytest.approx(0.00980665, rel=TOLERANCE)
 
     def test_psi_input_uses_feet_for_tvd(self) -> None:
-        # 5000 psi at 10000 ft → pa = 5000 * 6894.757293168 = 34473786.46 Pa
-        # tvd_m = 10000 * 0.3048 = 3048 m
-        # sg = 34473786.46 / (9806.65 * 3048) = 1.15299...
-        # ppg = 1.15299 * 8.345404 = 9.625...
         pa_expected = 5000.0 * 6894.757293168
         tvd_m_expected = 10000.0 * 0.3048
         sg_expected = pa_expected / (9806.65 * tvd_m_expected)
@@ -458,7 +406,6 @@ class TestConvertFromPressureToEquivalentMudWeight:
         assert result == pytest.approx(ppg_expected, rel=TOLERANCE)
 
     def test_round_trip_with_inverse_function(self) -> None:
-        # Convert 10 ppg at 10000 ft → psi, then back → ppg: must recover 10.0
         pressure_psi = UnitConverter.convert_equivalent_mud_weight_to_pressure(
             mud_weight_value=10.0,
             tvd=10000.0,
@@ -523,7 +470,6 @@ class TestConvertFromPressureToEquivalentMudWeightArray:
     """Array variant of pressure → EMW conversions."""
 
     def test_each_element_matches_independent_scalar_result(self) -> None:
-        # 9806650 Pa at 1000 m → 1.0 SG; 19613300 Pa at 1000 m → 2.0 SG
         result = UnitConverter.convert_from_pressure_to_equivalent_mud_weight_array(
             pressure_values=[9806650.0, 19613300.0],
             tvd_values=[1000.0, 1000.0],
@@ -563,7 +509,6 @@ class TestConvertEquivalentMudWeightToPressure:
     """
 
     def test_fresh_water_at_1000m_gives_exact_pa(self) -> None:
-        # P = 1.0 SG * 9806.65 Pa/(SG·m) * 1000 m = 9806650 Pa exactly
         result = UnitConverter.convert_equivalent_mud_weight_to_pressure(
             mud_weight_value=1.0,
             tvd=1000.0,
@@ -573,7 +518,6 @@ class TestConvertEquivalentMudWeightToPressure:
         assert result == pytest.approx(9806650.0, rel=TOLERANCE)
 
     def test_fresh_water_at_1000m_gives_exact_mpa(self) -> None:
-        # 9806650 Pa / 1e6 = 9.80665 MPa exactly
         result = UnitConverter.convert_equivalent_mud_weight_to_pressure(
             mud_weight_value=1.0,
             tvd=1000.0,
@@ -583,8 +527,6 @@ class TestConvertEquivalentMudWeightToPressure:
         assert result == pytest.approx(9.80665, rel=TOLERANCE)
 
     def test_psi_output_uses_feet_for_tvd(self) -> None:
-        # 10 ppg at 10000 ft: sg = 10/8.345404, tvd_m = 10000*0.3048
-        # P_pa = sg * 9806.65 * tvd_m; P_psi = P_pa / 6894.757293168
         sg_value = 10.0 / 8.345404
         tvd_metres = 10000.0 * 0.3048
         pa_expected = sg_value * 9806.65 * tvd_metres
@@ -598,8 +540,6 @@ class TestConvertEquivalentMudWeightToPressure:
         assert result == pytest.approx(psi_expected, rel=TOLERANCE)
 
     def test_kg_per_m3_to_bar_at_500m(self) -> None:
-        # 1200 kg/m3 → sg = 1200/1000 = 1.2; P_pa = 1.2 * 9806.65 * 500
-        # P_bar = 1.2 * 9806.65 * 500 / 100000 = 58.8399
         pa_expected = 1.2 * 9806.65 * 500.0
         bar_expected = pa_expected / 100000.0
         result = UnitConverter.convert_equivalent_mud_weight_to_pressure(
@@ -611,7 +551,6 @@ class TestConvertEquivalentMudWeightToPressure:
         assert result == pytest.approx(bar_expected, rel=TOLERANCE)
 
     def test_round_trip_with_inverse_function(self) -> None:
-        # Convert 1.2 SG at 2000 m → mpa → SG: must recover 1.2
         pressure_mpa = UnitConverter.convert_equivalent_mud_weight_to_pressure(
             mud_weight_value=1.2,
             tvd=2000.0,
@@ -676,7 +615,6 @@ class TestConvertEquivalentMudWeightToPressureArray:
     """Array variant of EMW → pressure conversions."""
 
     def test_each_element_matches_independent_scalar_result(self) -> None:
-        # 1 SG at 1000 m → 9806650 Pa; 2 SG at 1000 m → 19613300 Pa
         result = UnitConverter.convert_equivalent_mud_weight_to_pressure_array(
             mud_weight_values=[1.0, 2.0],
             tvd_values=[1000.0, 1000.0],
